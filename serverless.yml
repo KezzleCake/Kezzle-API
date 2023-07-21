@@ -1,0 +1,20 @@
+service: kezzle-api
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  region: ap-northeast-2
+  stage: dev
+  runtime: nodejs18.x
+
+functions:
+  main:
+    handler: src/lambda.handler
+    events:
+      - http:
+          method: ANY
+          path: '{proxy+}'
