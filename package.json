@@ -22,15 +22,30 @@
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mongoose": "^10.0.1",
     "@nestjs/platform-express": "^10.0.0",
     "@vendia/serverless-express": "^4.10.4",
     "aws-lambda": "^1.0.7",
+    "cake": "^0.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "dotenv": "^16.3.1",
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1",
+    "g": "^2.0.1",
+    "jose": "^4.14.4",
+    "mo": "^1.7.3",
+    "mongoose": "^7.4.0",
+    "nest": "^0.1.6",
+    "nodemailer": "^6.9.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-offline": "^12.0.4",
-    "serverless-plugin-typescript": "^2.1.5"
+    "serverless-plugin-typescript": "^2.1.5",
+    "users": "^2.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -53,7 +68,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "webpack-node-externals": "^3.0.0"
   },
   "jest": {
     "moduleFileExtensions": [
