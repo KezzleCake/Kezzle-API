@@ -21,8 +21,10 @@ export class User {
   @Prop({
     type: String,
     enum: [RolesEnum.Admin, RolesEnum.Buyer, RolesEnum.Seller],
-    default: RolesEnum.Seller,
+    default: RolesEnum.Buyer,
   })
+  roles: RolesEnum;
+
   @Prop({ type: [{ type: String, ref: 'Cake', default: [] }] })
   cake_like_ids: string[];
 

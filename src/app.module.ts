@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { APP_PIPE } from '@nestjs/core';
+import { CakeModule } from './cake/cake.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { APP_PIPE } from '@nestjs/core';
       dbName: process.env.MONGODB_DBNAME,
     }),
     UserModule,
+    CakeModule,
   ],
   controllers: [],
   providers: [
