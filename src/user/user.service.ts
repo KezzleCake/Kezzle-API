@@ -16,4 +16,22 @@ export class UserService {
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
+
+  async addLikeListToUser(userId: string, cakeId: string) {
+    const user = await this.userModel.findById(userId);
+    console.log('user');
+    if (!user) {
+      throw new Error('User not found');
+    }
+    console.log('user1');
+
+    if (!user.cake_like_ids.includes(cakeId)) {
+      console.log('user2');
+      user.cake_like_ids.push(cakeId);
+      console.log(user);
+      await user.save();
+    }
+
+    return user;
+  }
 }

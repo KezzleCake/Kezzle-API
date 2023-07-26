@@ -38,4 +38,15 @@ export class CakeController {
   delete(@Param('id') cakeId: string) {
     return this.cakeService.removeContent(cakeId);
   }
+
+  @Post(':id/likes')
+  likeCake(@Param('id') cakeId: string) {
+    //, userId: string) {  생각해보니깐 유저 id를 어디서 받아와??????
+    return this.cakeService.addLikeList(cakeId);
+  }
+
+  @Delete(':id/likes')
+  notLikeCake(@Param('id') cakeId: string) {
+    return this.cakeService.removeLikeList(cakeId);
+  }
 }

@@ -1,3 +1,4 @@
+import { UserService } from './../user/user.service';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,7 +9,10 @@ import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class CakeService {
-  constructor(@InjectModel(Cake.name) private cakeModel: Model<Cake>) {}
+  constructor(
+    @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
+    private readonly userService: UserService,
+  ) {}
 
   //이건 업로드 기능이 없기 때문에 추후 개발
   async create(createCakeDto: CreateCakeDto): Promise<Cake> {
@@ -57,5 +61,41 @@ export class CakeService {
     } catch (error) {
       throw new NotFoundException('케이크를 찾을 수 없습니다.');
     }
+  }
+
+  async addLikeList(cakeId: string) {
+    const cake = await this.cakeModel.findById(cakeId);
+    if (!cake) {
+      throw new Error('케이크를 찾을 수 없습니다.');
+    }
+
+    const userId = '64c0fd12e84166fb6a292568';
+
+    if (!cake.user_like_ids.includes(userId)) {
+      cake.user_like_ids.push(userId);
+      await cake.save();
+    }
+    // else throw new Error('이미 좋아요를 누른 케이크입니다');
+    //위에 처럼 이미 누른것에 대한 처리를 에러로 해야하나..? 앱에 그냥 팝업으로 살짝 알려주지 않나?
+
+    await this.userService.addLikeListToUser(userId, cakeId);
+
+    return cake;
+  }
+
+  async removeLikeList(cakeId: string) {
+    const cake = await this.cakeModel.findById(cakeId);
+    if (!cake) {
+      throw new Error('케이크를 찾을 수 없습니다.');
+    }
+
+    const userId = '64be772a7f1863328cef4e57';
+
+    const idx = cake.user_like_ids.indexOf(userId);
+    if (idx !== -1) {
+      cake.user_like_ids.splice(idx);
+    }
+    await cake.save();
+    return cake;
   }
 }
