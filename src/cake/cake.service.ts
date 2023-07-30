@@ -1,4 +1,3 @@
-import { UserService } from './../user/user.service';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,6 +5,8 @@ import { Cake } from './entities/cake.schema';
 import { CreateCakeDto } from './dto/create-cake.dto';
 import { UpdateCakeDto } from './dto/update-cake.dto';
 import { NotFoundException } from '@nestjs/common';
+import { UserService } from './../user/user.service';
+import IUser from 'src/user/interfaces/user.interface';
 
 @Injectable()
 export class CakeService {
@@ -63,34 +64,28 @@ export class CakeService {
     }
   }
 
-  async addLikeList(cakeId: string) {
+  async addLikeList(cakeId: string, user: IUser) {
     const cake = await this.cakeModel.findById(cakeId);
     if (!cake) {
       throw new Error('케이크를 찾을 수 없습니다.');
     }
-
-    const userId = '64c0fd12e84166fb6a292568';
-
+    const userId = user.firebaseUid;
     if (!cake.user_like_ids.includes(userId)) {
       cake.user_like_ids.push(userId);
       await cake.save();
-    }
-    // else throw new Error('이미 좋아요를 누른 케이크입니다');
-    //위에 처럼 이미 누른것에 대한 처리를 에러로 해야하나..? 앱에 그냥 팝업으로 살짝 알려주지 않나?
+    } else throw new Error('이미 좋아요를 누른 케이크입니다');
+    // 위에 처럼 이미 누른것에 대한 처리를 에러로 해야하나..? 앱에 그냥 팝업으로 살짝 알려주지 않나?
 
     await this.userService.addLikeListToUser(userId, cakeId);
-
     return cake;
   }
 
-  async removeLikeList(cakeId: string) {
+  async removeLikeList(cakeId: string, user: IUser) {
     const cake = await this.cakeModel.findById(cakeId);
     if (!cake) {
       throw new Error('케이크를 찾을 수 없습니다.');
     }
-
-    const userId = '64be772a7f1863328cef4e57';
-
+    const userId = user.firebaseUid;
     const idx = cake.user_like_ids.indexOf(userId);
     if (idx !== -1) {
       cake.user_like_ids.splice(idx);

@@ -4,6 +4,9 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { APP_PIPE } from '@nestjs/core';
 import { CakeModule } from './cake/cake.module';
+import { AuthModule } from './auth/auth.module';
+import { LikeModule } from './like/like.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -17,6 +20,9 @@ import { CakeModule } from './cake/cake.module';
     }),
     UserModule,
     CakeModule,
+    AuthModule,
+    LikeModule,
+    StoreModule,
   ],
   controllers: [],
   providers: [

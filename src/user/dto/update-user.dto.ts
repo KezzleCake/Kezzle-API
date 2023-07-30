@@ -1,4 +1,4 @@
-import { IsBoolean, IsString, IsArray } from 'class-validator';
+import { IsString } from 'class-validator';
 export class UpdateUserDto {
   @IsString()
   nickname: string;

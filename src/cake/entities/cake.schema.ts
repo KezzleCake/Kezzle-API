@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Image, ImageSchema } from './image.Schema';
+import { Image, ImageSchema } from '../../common/entities/image.Schema';
 
 export type CakeDocument = Cake & Document;
 
@@ -13,7 +13,7 @@ export class Cake {
   user_like_ids: string[];
 
   @Prop({ type: String, ref: 'User' })
-  owner_user_id: string;
+  owner_store_id: string;
 }
 
 export const CakeSchema = SchemaFactory.createForClass(Cake);

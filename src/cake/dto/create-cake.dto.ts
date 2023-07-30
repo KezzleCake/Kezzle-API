@@ -6,7 +6,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Image } from '../entities/image.Schema';
+import { Image } from '../../common/entities/image.Schema';
 
 export class CreateCakeDto {
   @ValidateNested()

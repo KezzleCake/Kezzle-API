@@ -1,21 +1,50 @@
-import { Controller, Get, Post, Body, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Headers,
+  Delete,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { UserService } from './user.service';
+import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
+import { Roles } from './entities/roles.enum';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.Admin, Roles.Buyer)
   @Get()
   getAll() {
     return this.userService.findAll();
   }
 
-  @Get('/hello')
-  getHello(@Req() request: Request): string {
-    return 'Hello ' + request['user']?.email + '!';
+  @Post()
+  create(@Headers('authorization') authorization: string, @Body() userData) {
+    return this.userService.create(authorization, userData);
   }
 
-  @Post()
-  create(@Body() userData) {
-    return this.userService.create(userData);
+  @UseGuards(FirebaseAuthGuard)
+  @Get(':id')
+  getOne(@Param('id') userId: string) {
+    return this.userService.findOneByFirebase(userId);
+  }
+
+  @UseGuards(FirebaseAuthGuard)
+  @Patch(':id')
+  modify(@Param('id') userId: string, @Body() updateData) {
+    return this.userService.changeContent(userId, updateData);
+  }
+
+  @UseGuards(FirebaseAuthGuard)
+  @Delete(':id')
+  delete(@Param('id') userId: string) {
+    return this.userService.removeContent(userId);
   }
 }

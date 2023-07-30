@@ -21,11 +21,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^10.0.1",
+    "@nestjs/passport": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.0",
     "@vendia/serverless-express": "^4.10.4",
     "aws-lambda": "^1.0.7",
     "cake": "^0.1.1",
@@ -40,11 +44,14 @@
     "mongoose": "^7.4.0",
     "nest": "^0.1.6",
     "nodemailer": "^6.9.4",
+    "passport": "^0.6.0",
+    "passport-firebase-jwt": "^1.2.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-offline": "^12.0.4",
     "serverless-plugin-typescript": "^2.1.5",
+    "typeorm": "^0.3.17",
     "users": "^2.0.0"
   },
   "devDependencies": {
