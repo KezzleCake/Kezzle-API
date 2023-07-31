@@ -1,6 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-// noinspection TypeScriptCheckImport
 import { Strategy, ExtractJwt } from 'passport-firebase-jwt';
 import { auth } from 'firebase-admin';
 import { UserService } from 'src/user/user.service';

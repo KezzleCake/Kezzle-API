@@ -40,11 +40,14 @@ export class UserService {
       oauth_provider: firebaseUser.firebase.sign_in_provider,
       username: firebaseUser.name,
     });
-    return createdUser.save();
+    return await createdUser.save();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+  //TODO: 나중에 싹다 return DTO로 바꿔야함
+  async findAll(): Promise<UserResponseDto[]> {
+    const users = await this.userModel.find().exec();
+
+    return users.map((x) => new UserResponseDto(x));
   }
 
   async findOneByFirebase(id: string): Promise<UserResponseDto> {
@@ -83,19 +86,5 @@ export class UserService {
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
-  }
-  async addLikeListToUser(userId: string, cakeId: string) {
-    const user = await this.userModel.findOne({
-      firebaseUid: userId,
-    });
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if (!user.cake_like_ids.includes(cakeId)) {
-      user.cake_like_ids.push(cakeId);
-      await user.save();
-    }
-    return user;
   }
 }

@@ -19,7 +19,7 @@ import { Roles } from './entities/roles.enum';
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @RolesAllowed(Roles.Admin, Roles.Buyer)
+  @RolesAllowed(Roles.ADMIN)
   @Get()
   getAll() {
     return this.userService.findAll();

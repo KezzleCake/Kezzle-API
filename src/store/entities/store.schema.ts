@@ -32,8 +32,8 @@ export class Store {
   @Prop({ default: [] })
   phone_number: string;
 
-  @Prop({ type: String, ref: 'User', required: true })
-  owner_user_id: string;
+  // @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true }) <- 이런식으로 하면 됨
+  // owner_user_id: User;
 
   @Prop({ type: ImageSchema })
   detail_images: Image[];

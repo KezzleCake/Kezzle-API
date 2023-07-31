@@ -19,11 +19,11 @@ export class User {
   oauth_provider: string;
 
   @Prop({
-    type: String,
-    enum: [Roles.Admin, Roles.Buyer, Roles.Seller],
-    default: Roles.Buyer,
+    type: [String],
+    enum: [Roles.ADMIN, Roles.BUYER, Roles.SELLER],
+    default: [Roles.BUYER, Roles.ADMIN],
   })
-  roles: Roles;
+  roles: Roles[];
 
   @Prop({ type: [{ type: String, ref: 'Cake', default: [] }] })
   cake_like_ids: string[];
