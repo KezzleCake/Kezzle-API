@@ -11,6 +11,10 @@ provider:
   stage: dev
   runtime: nodejs18.x
 
+package:
+  exclude:
+    - node_modules/aws-sdk/**
+
 functions:
   main:
     handler: src/lambda.handler
