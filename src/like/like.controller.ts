@@ -17,19 +17,19 @@ export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
   @UseGuards(FirebaseAuthGuard)
-  @Get('cake/:id/cakes_likes')
+  @Get('users/:id/liked-cakes')
   getCake(@Param('id') userId: string) {
     return this.likeService.findUserLikeCake(userId);
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Post('cake/:id/likes')
+  @Post('cakes/:id/likes')
   likeCake(@Param('id') cakeId: string, @GetUser() userDto: IUser) {
     return this.likeService.addLikeList(cakeId, userDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Delete('cake/:id/likes')
+  @Delete('cakes/:id/likes')
   notLikeCake(@Param('id') cakeId: string, @GetUser() userDto: IUser) {
     return this.likeService.removeLikeList(cakeId, userDto);
   }
