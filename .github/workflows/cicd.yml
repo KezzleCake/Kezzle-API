@@ -21,6 +21,21 @@ jobs:
       - run: npm ci
       # - name: Create .env file
       #   run: |
+      - name: make firebase admin sdk json file
+        run: |
+          echo '{
+            "type": "{{ secrets.FIREBASE_TYPE }}",
+            "project_id": "{{ secrets.FIREBASE_PROJECT_ID }}",
+            "private_key_id": "{{ secrets.FIREBASE_PRIVATE_KEY_ID }}",
+            "private_key": "{{ secrets.FIREBASE_PRIVATE_KEY }}",
+            "client_email": "{{ secrets.FIREBASE_CLIENT_EMAIL }}",
+            "client_id": "{{ secrets.FIREBASE_CLIENT_ID }}",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "{{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}",
+            "universe_domain": "googleapis.com"
+          }' > firebase-adminsdk.json
       - name: serverless deploy
         uses: serverless/github-action@v3.2
         with:
@@ -28,3 +43,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          MONGODB_DBNAME: ${{ secrets.MONGODB_DBNAME }}
