@@ -30,7 +30,7 @@ export class UserService {
     });
 
     if (user) {
-      //이미 가입된 사람은 저장거절
+      //TODO:이미 가입된 사람은 저장거절
       throw new Error('User already joined');
     }
 

@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsDateString,
-  IsArray,
-  IsMongoId,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsMongoId, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Image } from '../../common/entities/image.Schema';
 

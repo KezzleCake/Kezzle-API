@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Param,
   Patch,
@@ -22,13 +21,7 @@ export class CakeController {
   getAll() {
     return this.cakeService.findAll();
   }
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
-  @RolesAllowed(Roles.SELLER)
-  @Post() //이 친군 나중에 개발해도 됨~~
-  create(@Body() cakeData) {
-    console.log(cakeData);
-    return this.cakeService.create(cakeData);
-  }
+
   @UseGuards(FirebaseAuthGuard)
   @Get(':id')
   getOne(@Param('id') cakeId: string) {
