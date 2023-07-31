@@ -27,13 +27,13 @@ export class LikeController {
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Post('cake/:id/likes')
+  @Post('cakes/:id/likes')
   likeCake(@Param('id') cakeId: string, @GetUser() userDto: IUser) {
     return this.likeService.cakeAddLikeList(cakeId, userDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Delete('cake/:id/likes')
+  @Delete('cakes/:id/likes')
   notLikeCake(@Param('id') cakeId: string, @GetUser() userDto: IUser) {
     return this.likeService.cakeRemoveLikeList(cakeId, userDto);
   }
