@@ -16,7 +16,11 @@ import { Roles } from 'src/user/entities/roles.enum';
 import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
-import { CreateCakeDto } from 'src/cake/dto/create-cake.dto';
+import { GetUser } from 'src/user/decorators/get-user.decorator';
+import IUser from 'src/user/interfaces/user.interface';
+import { StoreResponseDto } from './dto/response-store.dto';
+import { Store } from './entities/store.schema';
+import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 
 @Controller('store')
 export class StoreController {
@@ -24,20 +28,20 @@ export class StoreController {
 
   @UseGuards(FirebaseAuthGuard)
   @Get()
-  getAll() {
-    return this.storeService.findAll();
+  getAll(@GetUser() userDto: IUser): Promise<StoreResponseDto[]> {
+    return this.storeService.findAll(userDto);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Post()
-  create(@Body() storeData: CreateStoreDto) {
+  create(@Body() storeData: CreateStoreDto): Promise<Store> {
     return this.storeService.create(storeData);
   }
 
   @UseGuards(FirebaseAuthGuard)
   @Get(':id')
-  getOne(@Param('id') cakeId: string) {
+  getOne(@Param('id') cakeId: string): Promise<DetailStoreResponseDto> {
     return this.storeService.findOne(cakeId);
   }
 
@@ -53,15 +57,5 @@ export class StoreController {
   @Delete(':id')
   remove(@Param('id') storeId: string) {
     return this.storeService.removeContent(storeId);
-  }
-
-  @Post(':id/cakes')
-  createCake(@Body() cakeData: CreateCakeDto, @Param('id') storeId: string) {
-    return this.storeService.createCake(cakeData, storeId);
-  }
-
-  @Get(':id/cakes')
-  getStoreCake(@Param('id') storeId: string) {
-    return this.storeService.findCake(storeId);
   }
 }

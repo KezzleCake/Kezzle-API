@@ -16,6 +16,8 @@ import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { Roles } from './entities/roles.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './dto/response-user.dto';
+import { User } from './entities/user.schema';
 
 @Controller('user')
 export class UserController {
@@ -23,7 +25,7 @@ export class UserController {
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   @Get()
-  getAll() {
+  getAll(): Promise<UserResponseDto[]> {
     return this.userService.findAll();
   }
 
@@ -31,13 +33,13 @@ export class UserController {
   create(
     @Headers('authorization') authorization: string,
     @Body() createUserDto: CreateUserDto,
-  ) {
+  ): Promise<User> {
     return this.userService.create(authorization, createUserDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
   @Get(':id')
-  getOne(@Param('id') userId: string) {
+  getOne(@Param('id') userId: string): Promise<UserResponseDto> {
     return this.userService.findOneByFirebase(userId);
   }
 

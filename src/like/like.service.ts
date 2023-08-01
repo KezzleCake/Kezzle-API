@@ -28,7 +28,7 @@ export class LikeService {
       const cakes = await this.cakeModel.find({
         _id: { $in: user.cake_like_ids },
       });
-      return cakes.map((cake) => new CakeResponseDto(cake));
+      return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
@@ -46,14 +46,13 @@ export class LikeService {
       const stores = await this.storeModel.find({
         _id: { $in: user.store_like_ids },
       });
-
-      return stores.map((store) => new StoreResponseDto(store));
+      return stores.map((store) => new StoreResponseDto(store, userid));
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
   }
 
-  async cakeAddLikeList(cakeId: string, user: IUser) {
+  async cakeAddLikeList(cakeId: string, user: IUser): Promise<boolean> {
     const cake = await this.cakeModel.findById(cakeId);
     if (!cake) {
       throw new Error('케이크를 찾을 수 없습니다.');
@@ -82,7 +81,7 @@ export class LikeService {
     return true;
   }
 
-  async cakeRemoveLikeList(cakeId: string, user: IUser) {
+  async cakeRemoveLikeList(cakeId: string, user: IUser): Promise<boolean> {
     const cake = await this.cakeModel.findById(cakeId);
     if (!cake) {
       throw new Error('케이크를 찾을 수 없습니다.');
@@ -100,7 +99,7 @@ export class LikeService {
     return true;
   }
 
-  async storeAddLikeList(storeId: string, user: IUser) {
+  async storeAddLikeList(storeId: string, user: IUser): Promise<boolean> {
     const store = await this.storeModel.findById(storeId);
     if (!store) {
       throw new Error('매장을 찾을 수 없습니다.');
@@ -129,7 +128,7 @@ export class LikeService {
     return true;
   }
 
-  async storeRemoveLikeList(storeId: string, user: IUser) {
+  async storeRemoveLikeList(storeId: string, user: IUser): Promise<boolean> {
     const store = await this.storeModel.findById(storeId).exec();
     if (!store) {
       throw new NotFoundException('매장을 찾을 수 없습니다.');
