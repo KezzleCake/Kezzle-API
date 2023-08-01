@@ -14,6 +14,10 @@ import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { Roles } from './entities/roles.enum';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './dto/response-user.dto';
+import { User } from './entities/user.schema';
 
 @Controller('user')
 export class UserController {
@@ -21,24 +25,27 @@ export class UserController {
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN)
   @Get()
-  getAll() {
+  getAll(): Promise<UserResponseDto[]> {
     return this.userService.findAll();
   }
 
   @Post()
-  create(@Headers('authorization') authorization: string, @Body() userData) {
-    return this.userService.create(authorization, userData);
+  create(
+    @Headers('authorization') authorization: string,
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<User> {
+    return this.userService.create(authorization, createUserDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
   @Get(':id')
-  getOne(@Param('id') userId: string) {
+  getOne(@Param('id') userId: string): Promise<UserResponseDto> {
     return this.userService.findOneByFirebase(userId);
   }
 
   @UseGuards(FirebaseAuthGuard)
   @Patch(':id')
-  modify(@Param('id') userId: string, @Body() updateData) {
+  modify(@Param('id') userId: string, @Body() updateData: UpdateUserDto) {
     return this.userService.changeContent(userId, updateData);
   }
 

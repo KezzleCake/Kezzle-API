@@ -4,7 +4,7 @@ import { Strategy, ExtractJwt } from 'passport-firebase-jwt';
 import { auth } from 'firebase-admin';
 import { UserService } from 'src/user/user.service';
 import { Reflector } from '@nestjs/core';
-import { UserResponseDto } from 'src/user/dto/user-response';
+import { UserResponseDto } from 'src/user/dto/response-user.dto';
 
 @Injectable()
 export class FirebaseAuthStrategy extends PassportStrategy(
