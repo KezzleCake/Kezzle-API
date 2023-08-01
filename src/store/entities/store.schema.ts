@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
+import { Document } from 'mongoose';
 import { Image, ImageSchema } from '../../common/entities/image.Schema';
-import { User } from 'src/user/entities/user.schema';
 import { LocationSchema, Location } from './location.schema';
 
 export type StoreDocument = Store & Document;

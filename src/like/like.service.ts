@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
 import { Cake } from 'src/cake/entities/cake.schema';
+import { StoreResponseDto } from 'src/store/dto/response-store.dto';
 import { Store } from 'src/store/entities/store.schema';
 import { User } from 'src/user/entities/user.schema';
 import IUser from 'src/user/interfaces/user.interface';
@@ -14,7 +16,7 @@ export class LikeService {
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
   ) {}
 
-  async findUserLikeCake(userid: string) {
+  async findUserLikeCake(userid: string): Promise<CakeResponseDto[]> {
     try {
       const user = await this.userModel.findOne({
         firebaseUid: userid,
@@ -23,17 +25,16 @@ export class LikeService {
         throw new NotFoundException('유저를 찾을 수 없습니다.');
       }
 
-      const cake = await this.cakeModel.find({
+      const cakes = await this.cakeModel.find({
         _id: { $in: user.cake_like_ids },
       });
-
-      return cake;
+      return cakes.map((cake) => new CakeResponseDto(cake));
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
   }
 
-  async findUserLikeStore(userid: string) {
+  async findUserLikeStore(userid: string): Promise<StoreResponseDto[]> {
     try {
       const user = await this.userModel.findOne({
         firebaseUid: userid,
@@ -42,11 +43,11 @@ export class LikeService {
         throw new NotFoundException('유저를 찾을 수 없습니다.');
       }
 
-      const store = await this.storeModel.find({
+      const stores = await this.storeModel.find({
         _id: { $in: user.store_like_ids },
       });
 
-      return store;
+      return stores.map((store) => new StoreResponseDto(store));
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
@@ -78,6 +79,7 @@ export class LikeService {
         },
       },
     );
+    return true;
   }
 
   async cakeRemoveLikeList(cakeId: string, user: IUser) {
@@ -95,6 +97,7 @@ export class LikeService {
       { firebaseUid: userId },
       { $pull: { cake_like_ids: cakeId } },
     );
+    return true;
   }
 
   async storeAddLikeList(storeId: string, user: IUser) {
@@ -123,6 +126,7 @@ export class LikeService {
         },
       },
     );
+    return true;
   }
 
   async storeRemoveLikeList(storeId: string, user: IUser) {
@@ -140,5 +144,6 @@ export class LikeService {
       { firebaseUid: userId },
       { $pull: { store_like_ids: storeId } },
     );
+    return true;
   }
 }

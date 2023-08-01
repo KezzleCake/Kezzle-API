@@ -7,8 +7,4 @@ export class CreateCakeDto {
   @Type(() => Image)
   @IsNotEmpty()
   image: Image;
-
-  @IsNotEmpty()
-  @IsMongoId()
-  owner_store_id: string;
 }

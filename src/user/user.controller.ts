@@ -14,6 +14,8 @@ import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { Roles } from './entities/roles.enum';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -26,8 +28,11 @@ export class UserController {
   }
 
   @Post()
-  create(@Headers('authorization') authorization: string, @Body() userData) {
-    return this.userService.create(authorization, userData);
+  create(
+    @Headers('authorization') authorization: string,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    return this.userService.create(authorization, createUserDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
@@ -38,7 +43,7 @@ export class UserController {
 
   @UseGuards(FirebaseAuthGuard)
   @Patch(':id')
-  modify(@Param('id') userId: string, @Body() updateData) {
+  modify(@Param('id') userId: string, @Body() updateData: UpdateUserDto) {
     return this.userService.changeContent(userId, updateData);
   }
 

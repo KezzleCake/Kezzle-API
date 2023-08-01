@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Cake } from './entities/cake.schema';
 import { UpdateCakeDto } from './dto/update-cake.dto';
 import { NotFoundException } from '@nestjs/common';
+import { CakeResponseDto } from './dto/response-cake.dto';
 
 @Injectable()
 export class CakeService {
@@ -11,17 +12,18 @@ export class CakeService {
     @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
   ) {}
 
-  async findAll(): Promise<Cake[]> {
-    return await this.cakeModel.find().exec();
+  async findAll(): Promise<CakeResponseDto[]> {
+    const cakes = await this.cakeModel.find().exec();
+    return cakes.map((cake) => new CakeResponseDto(cake));
   }
 
-  async findOne(cakeid: string): Promise<Cake> {
+  async findOne(cakeid: string): Promise<CakeResponseDto> {
     try {
       const cake = await this.cakeModel.findById(cakeid).exec();
       if (!cake) {
         throw new NotFoundException('케이크를 찾을 수 없습니다.');
       }
-      return cake;
+      return new CakeResponseDto(cake);
     } catch (error) {
       throw new NotFoundException('케이크를 찾을 수 없습니다.');
     }
@@ -39,7 +41,7 @@ export class CakeService {
           _id: cakeid,
         },
         {
-          $set: updateData.image,
+          $set: updateData,
         },
       );
     } catch (error) {
@@ -54,7 +56,7 @@ export class CakeService {
       if (!cake) {
         throw new NotFoundException('케이크를 찾을 수 없습니다.');
       }
-      return cake.deleteOne();
+      return await this.cakeModel.deleteOne({ _id: cakeid });
     } catch (error) {
       throw new NotFoundException('케이크를 찾을 수 없습니다.');
     }

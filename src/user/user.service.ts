@@ -9,7 +9,7 @@ import { User } from './entities/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 
 import { auth } from 'firebase-admin';
-import { UserResponseDto } from './dto/user-response';
+import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -34,7 +34,7 @@ export class UserService {
       throw new Error('User already joined');
     }
 
-    const createdUser = new this.userModel({
+    const createdUser = await new this.userModel({
       ...createUserDto,
       firebaseUid: firebaseUser.uid,
       oauth_provider: firebaseUser.firebase.sign_in_provider,
@@ -43,11 +43,10 @@ export class UserService {
     return await createdUser.save();
   }
 
-  //TODO: 나중에 싹다 return DTO로 바꿔야함
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.userModel.find().exec();
 
-    return users.map((x) => new UserResponseDto(x));
+    return users.map((user) => new UserResponseDto(user));
   }
 
   async findOneByFirebase(id: string): Promise<UserResponseDto> {
@@ -66,9 +65,10 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('유저를 찾을 수 없습니다.');
       }
-      user.nickname = updateData.nickname;
-      // 변경된 내용을 저장&반환
-      return user.save();
+      return await this.userModel.updateOne(
+        { firebaseUid: userid },
+        { $set: updateData },
+      );
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
@@ -82,7 +82,7 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('유저를 찾을 수 없습니다.');
       }
-      return user.deleteOne();
+      return await this.userModel.deleteOne({ firebaseUid: userid });
     } catch (error) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }

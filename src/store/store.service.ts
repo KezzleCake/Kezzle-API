@@ -1,3 +1,4 @@
+import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -6,6 +7,7 @@ import { Store } from './entities/store.schema';
 import { Model } from 'mongoose';
 import { Cake } from 'src/cake/entities/cake.schema';
 import { CreateCakeDto } from 'src/cake/dto/create-cake.dto';
+import { StoreResponseDto } from './dto/response-store.dto';
 
 @Injectable()
 export class StoreService {
@@ -19,17 +21,18 @@ export class StoreService {
     return await createdStore.save();
   }
 
-  async findAll(): Promise<Store[]> {
-    return await this.storeModel.find().exec();
+  async findAll(): Promise<StoreResponseDto[]> {
+    const stores = await this.storeModel.find().exec();
+    return stores.map((store) => new StoreResponseDto(store));
   }
 
-  async findOne(storeid: string): Promise<Store> {
+  async findOne(storeid: string): Promise<StoreResponseDto> {
     try {
       const store = await this.storeModel.findById(storeid).exec();
       if (!store) {
         throw new NotFoundException('매장을 찾을 수 없습니다.');
       }
-      return store;
+      return new StoreResponseDto(store);
     } catch (error) {
       throw new NotFoundException('매장을 찾을 수 없습니다.');
     }
@@ -62,7 +65,7 @@ export class StoreService {
       if (!store) {
         throw new NotFoundException('매장을 찾을 수 없습니다.');
       }
-      return store.deleteOne();
+      return await this.storeModel.deleteOne({ _id: storeid });
     } catch (error) {
       throw new NotFoundException('매장을 찾을 수 없습니다.');
     }
@@ -76,15 +79,15 @@ export class StoreService {
     return await createdStore.save();
   }
 
-  async findCake(storeId) {
+  async findCake(storeId): Promise<CakeResponseDto[]> {
     const store = await this.storeModel.findById(storeId).exec();
     if (!store) {
       throw new NotFoundException('매장을 찾을 수 없습니다.');
     }
 
-    const cake = await this.cakeModel.find({
+    const cakes = await this.cakeModel.find({
       owner_store_id: storeId,
     });
-    return cake;
+    return cakes.map((cake) => new CakeResponseDto(cake));
   }
 }
