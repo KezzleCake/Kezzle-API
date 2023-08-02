@@ -24,13 +24,13 @@ import { CreateCakeDto } from './dto/create-cake.dto';
 export class CakeController {
   constructor(private readonly cakeService: CakeService) {}
   @UseGuards(FirebaseAuthGuard)
-  @Get('cake')
+  @Get('cakes')
   getAll(@GetUser() userDto: IUser): Promise<CakeResponseDto[]> {
     return this.cakeService.findAll(userDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Get('cake/:id')
+  @Get('cakes/:id')
   getOne(
     @Param('id') cakeId: string,
     @GetUser() userDto: IUser,
@@ -40,28 +40,35 @@ export class CakeController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
-  @Patch('cake/:id')
-  modify(@Param('id') cakeId: string, @Body() updateData: UpdateCakeDto) {
-    return this.cakeService.changeContent(cakeId, updateData);
+  @Patch('cakes/:id')
+  modify(
+    @Param('id') cakeId: string,
+    @Body() updateData: UpdateCakeDto,
+    @GetUser() userDto: IUser,
+  ) {
+    return this.cakeService.changeContent(cakeId, updateData, userDto);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
-  @Delete('cake/:id')
-  delete(@Param('id') cakeId: string) {
-    return this.cakeService.removeContent(cakeId);
+  @Delete('cakes/:id')
+  delete(@Param('id') cakeId: string, @GetUser() userDto: IUser) {
+    return this.cakeService.removeContent(cakeId, userDto);
   }
 
-  @Post('store/:id/cakes')
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER)
+  @Post('stores/:id/cakes')
   createCake(
     @Body() cakeData: CreateCakeDto,
     @Param('id') storeId: string,
+    @GetUser() userDto: IUser,
   ): Promise<Cake> {
-    return this.cakeService.createCake(cakeData, storeId);
+    return this.cakeService.createCake(cakeData, storeId, userDto);
   }
 
   @UseGuards(FirebaseAuthGuard)
-  @Get('store/:id/cakes')
+  @Get('stores/:id/cakes')
   getStoreCake(
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,

@@ -19,7 +19,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/response-user.dto';
 import { User } from './entities/user.schema';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @UseGuards(FirebaseAuthGuard, RolesGuard)

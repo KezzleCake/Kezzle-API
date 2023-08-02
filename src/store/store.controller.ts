@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -22,14 +23,18 @@ import { StoreResponseDto } from './dto/response-store.dto';
 import { Store } from './entities/store.schema';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 
-@Controller('store')
+@Controller('stores')
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
   @UseGuards(FirebaseAuthGuard)
   @Get()
-  getAll(@GetUser() userDto: IUser): Promise<StoreResponseDto[]> {
-    return this.storeService.findAll(userDto);
+  getAll(
+    @GetUser() userDto: IUser,
+    @Query('latitude') latitude: number,
+    @Query('longitude') longitude: number,
+  ): Promise<StoreResponseDto[]> {
+    return this.storeService.findAll(userDto, latitude, longitude);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
@@ -41,21 +46,30 @@ export class StoreController {
 
   @UseGuards(FirebaseAuthGuard)
   @Get(':id')
-  getOne(@Param('id') cakeId: string): Promise<DetailStoreResponseDto> {
-    return this.storeService.findOne(cakeId);
+  getOne(
+    @Param('id') cakeId: string,
+    @GetUser() userDto: IUser,
+    @Query('latitude') latitude: number,
+    @Query('longitude') longitude: number,
+  ): Promise<DetailStoreResponseDto> {
+    return this.storeService.findOne(cakeId, userDto, latitude, longitude);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Patch(':id')
-  update(@Param('id') storeId: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storeService.changeContent(storeId, updateStoreDto);
+  update(
+    @Param('id') storeId: string,
+    @Body() updateStoreDto: UpdateStoreDto,
+    @GetUser() userDto: IUser,
+  ) {
+    return this.storeService.changeContent(storeId, updateStoreDto, userDto);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Delete(':id')
-  remove(@Param('id') storeId: string) {
-    return this.storeService.removeContent(storeId);
+  remove(@Param('id') storeId: string, @GetUser() userDto: IUser) {
+    return this.storeService.removeContent(storeId, userDto);
   }
 }
