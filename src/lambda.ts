@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import serverlessExpress from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
-
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as admin from 'firebase-admin';
 
 let server: Handler;
@@ -10,6 +10,17 @@ let server: Handler;
 async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule);
   await app.init();
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Kezzle API')
+    .setDescription('The Kezzle API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addSecurityRequirements('bearer')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api-docs', app, document);
 
   admin.initializeApp({
     credential: admin.credential.cert({
