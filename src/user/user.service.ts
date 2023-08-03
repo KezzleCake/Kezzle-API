@@ -53,6 +53,11 @@ export class UserService {
       .catch(() => {
         throw new UserNotFoundException(userid);
       });
+
+    if (user == null) {
+      throw new UserNotFoundException(userid);
+    }
+
     return new UserResponseDto(user);
   }
 
