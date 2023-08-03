@@ -24,10 +24,8 @@ export class Store {
   @Prop({ type: String, default: '' })
   kakako_url: string;
 
-  // @Prop({ type: LocationSchema, required: true })
   @Prop({
     type: LocationSchema,
-    // index: '2dsphere',
   })
   location: Location;
 

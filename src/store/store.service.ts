@@ -10,6 +10,7 @@ import IUser from 'src/user/interfaces/user.interface';
 import { CakeService } from 'src/cake/cake.service';
 import { StoreNotFoundException } from './exceptions/store-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
+import { Roles } from 'src/user/entities/roles.enum';
 
 @Injectable()
 export class StoreService {
@@ -43,7 +44,6 @@ export class StoreService {
     );
   }
 
-  //TODO: 뭔가 가게 중복 체크가 필요할것 같기도 아닌것 같기도
   async create(createStoreDto: CreateStoreDto): Promise<Store> {
     const createdStore = new this.storeModel(createStoreDto);
     return await createdStore.save();
@@ -54,8 +54,7 @@ export class StoreService {
     user: IUser,
     latitude: number,
     longitude: number,
-  ) {
-    //: Promise<DetailStoreResponseDto> {
+  ): Promise<DetailStoreResponseDto> {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
@@ -90,8 +89,10 @@ export class StoreService {
       throw new StoreNotFoundException(storeid);
     });
 
-    //TODO: seller는 권한 확인, admin은 그냥 할게 해주기
-    if (store.owner_user_id !== user.firebaseUid) {
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
     return await this.storeModel.updateOne(

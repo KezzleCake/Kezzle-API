@@ -1,7 +1,7 @@
 import { Image } from '../../common/entities/image.Schema';
-import { Location } from '../entities/location.schema';
 import { IsOptional, IsString, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { LocationDto } from './response-location.dto';
 
 export class UpdateStoreDto {
   @IsOptional()
@@ -10,7 +10,7 @@ export class UpdateStoreDto {
     description: '케이크 매장 로고 사진',
     required: false,
   })
-  logo?: Image;
+  readonly logo?: Image;
 
   @IsOptional()
   @IsString()
@@ -20,7 +20,7 @@ export class UpdateStoreDto {
       '본비케이크만의 무드를 담은 케이크로 소중한 날을 더욱 특별하게 만들어드려요 :)',
     required: false,
   })
-  store_feature?: string;
+  readonly store_feature?: string;
 
   @IsOptional()
   @IsString()
@@ -30,7 +30,7 @@ export class UpdateStoreDto {
       '안녕하세요~ 저희매장은 소중한날 행복할 수 있도록 정성스럽게 제작해드리겠습니다:) 공지사항....',
     required: false,
   })
-  store_description?: string;
+  readonly store_description?: string;
 
   @IsOptional()
   @IsString()
@@ -38,7 +38,7 @@ export class UpdateStoreDto {
     description: '매장 인스타그램 링크',
     required: false,
   })
-  insta_url?: string;
+  readonly insta_url?: string;
 
   @IsOptional()
   @IsString()
@@ -46,21 +46,21 @@ export class UpdateStoreDto {
     description: '매장 카카오 채널 링크',
     required: false,
   })
-  kakako_url?: string;
+  readonly kakako_url?: string;
 
   @IsOptional()
   @ApiProperty({
-    type: Location,
+    type: LocationDto,
     description: '케이크 매장 위도 경도',
   })
-  location?: Location;
+  readonly location?: LocationDto;
 
   @IsOptional()
   @IsString()
   @ApiProperty({
     description: '케이크 매장 주소',
   })
-  address?: string;
+  readonly address?: string;
 
   @IsOptional()
   @IsString()
@@ -68,7 +68,15 @@ export class UpdateStoreDto {
     description: '케이크 매장 전화번호',
     required: false,
   })
-  phone_number?: string;
+  readonly phone_number?: string;
+
+  @IsOptional()
+  @ApiProperty({
+    type: Image,
+    description: '케이크 매장 소개 이미지들',
+    required: false,
+  })
+  readonly detail_images?: Image[];
 
   @IsOptional()
   @IsArray()
@@ -77,7 +85,7 @@ export class UpdateStoreDto {
     example: '[10:00 ~ 17:00, 09:00 ~ 16:00, ...]',
     required: false,
   })
-  operating_time?: string[];
+  readonly operating_time?: string[];
 
   @IsOptional()
   @IsArray()
@@ -86,5 +94,5 @@ export class UpdateStoreDto {
     description: '케이크 매장 오픈 시간 ',
     example: '[초코, 딸기, 당근]',
   })
-  taste?: string[];
+  readonly taste?: string[];
 }

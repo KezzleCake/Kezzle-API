@@ -6,5 +6,5 @@ export class UpdateUserDto {
   @ApiProperty({
     description: '유저 닉네임',
   })
-  nickname: string;
+  readonly nickname: string;
 }
