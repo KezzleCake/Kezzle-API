@@ -96,7 +96,7 @@ export class DetailStoreResponseDto {
 
   @ApiProperty({
     description: '매장에서 유저가 설정한 위치와 거리',
-    example: '10.1(km)',
+    example: '12041.93542697711 == 12km',
   })
   readonly distance: string;
 

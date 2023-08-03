@@ -106,8 +106,7 @@ export class StoreController {
     @GetUser() userDto: IUser,
     @Query('latitude') latitude,
     @Query('longitude') longitude,
-  ) {
-    //: Promise<DetailStoreResponseDto> {
+  ): Promise<DetailStoreResponseDto> {
     return this.storeService.findOne(
       cakeId,
       userDto,

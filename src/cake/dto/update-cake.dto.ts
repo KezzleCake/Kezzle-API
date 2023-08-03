@@ -18,5 +18,5 @@ export class UpdateCakeDto {
     },
     required: false,
   })
-  image?: Image;
+  readonly image?: Image;
 }
