@@ -90,6 +90,7 @@ export class StoreService {
       throw new StoreNotFoundException(storeid);
     });
 
+    //TODO: seller는 권한 확인, admin은 그냥 할게 해주기
     if (store.owner_user_id !== user.firebaseUid) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }

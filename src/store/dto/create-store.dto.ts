@@ -3,6 +3,7 @@ import { Location } from '../entities/location.schema';
 import { IsNotEmpty, IsString, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+//TODO: readonly 붙이기
 export class CreateStoreDto {
   @IsNotEmpty()
   @IsString()
@@ -40,7 +41,7 @@ export class CreateStoreDto {
   store_description: string;
 
   @IsOptional()
-  @IsString()
+  @IsString() //url고치기
   @ApiProperty({
     description: '매장 인스타그램 링크',
     required: false,
@@ -48,7 +49,7 @@ export class CreateStoreDto {
   insta_url: string;
 
   @IsOptional()
-  @IsString()
+  @IsString() //url고치기
   @ApiProperty({
     description: '매장 카카오 채널 링크',
     required: false,
@@ -60,7 +61,7 @@ export class CreateStoreDto {
     type: Location,
     description: '케이크 매장 위도 경도',
   })
-  location: Location;
+  location: Location; //바로 스키마로 쓰는 거 마음에 안든다
 
   @IsNotEmpty()
   @IsString()
@@ -99,3 +100,4 @@ export class CreateStoreDto {
   })
   taste: string[];
 }
+//TODO: 이미지들 추가하기
