@@ -51,7 +51,7 @@ export class LikeService {
         throw new UserNotFoundException(userid);
       });
 
-    const storesNearby = await this.storeModel.aggregate([
+    const stores = await this.storeModel.aggregate([
       {
         $geoNear: {
           near: {
@@ -62,15 +62,12 @@ export class LikeService {
           distanceField: 'distance',
         },
       },
+      {
+        $match: {
+          user_like_ids: { $in: [userid] },
+        },
+      },
     ]);
-
-    const storesLiked = await this.storeModel.find({
-      _id: { $in: user.store_like_ids },
-    });
-
-    const stores = storesNearby.filter((storeNearby) =>
-      storesLiked.some((storeLiked) => storeNearby._id.equals(storeLiked._id)),
-    );
 
     return Promise.all(
       stores.map(async (store) => {
