@@ -1,9 +1,24 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Image } from '../../common/entities/image.Schema';
 
 export class CakeResponseDto {
+  @ApiProperty({
+    description: '케이크 ID(ObjectId)',
+    example: '60b4d1b3e6b0b3001b9b9b9b',
+  })
   readonly _id: string;
+
+  @ApiProperty({ type: Image, description: 'image' })
   readonly image: Image;
+
+  @ApiProperty({ type: String, description: '케이크 소유 매장 ID(ObjectId)' })
   readonly owner_store_id: string;
+
+  @ApiProperty({
+    type: Boolean,
+    description: '로그인한 유저가 좋아요 눌렀는지',
+    example: true,
+  })
   readonly isLiked: boolean;
 
   constructor(data: any, userid: string) {

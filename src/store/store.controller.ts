@@ -6,9 +6,19 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -22,40 +32,128 @@ import { StoreResponseDto } from './dto/response-store.dto';
 import { Store } from './entities/store.schema';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 
-@Controller('store')
+const storeIdParams = {
+  name: 'id',
+  description: '매장 ID(ObjectId)',
+  required: true,
+  type: String,
+};
+
+@ApiTags('stores')
+@Controller('stores')
+@UseGuards(FirebaseAuthGuard, RolesGuard)
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
-  @UseGuards(FirebaseAuthGuard)
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
   @Get()
-  getAll(@GetUser() userDto: IUser): Promise<StoreResponseDto[]> {
-    return this.storeService.findAll(userDto);
+  @ApiOperation({
+    summary: '매장 전체 목록 요청',
+    description:
+      '페이지네이션된 매장 목록을 요청합니다.' +
+      '\n\n' +
+      '권한이 필요하지 않습니다.',
+  })
+  // TODO: @ApiPaginatedResponse(StoreResponseDto)
+  @ApiNoContentResponse({ description: '정보 없음.' })
+  getAll(
+    @GetUser() userDto: IUser,
+    @Query('latitude') latitude,
+    @Query('longitude') longitude,
+  ): Promise<StoreResponseDto[]> {
+    return this.storeService.findAll(
+      userDto,
+      parseFloat(latitude),
+      parseFloat(longitude),
+    );
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Post()
+  @ApiOperation({
+    summary: '매장 생성',
+    description:
+      '매장을 생성합니다.' + '\n\n' + 'Admin 또는 Seller 권한이 필요합니다.',
+  })
+  @ApiCreatedResponse({
+    description: '매장 생성 성공',
+    type: StoreResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'request body의 조건이 잘못됨.',
+  })
   create(@Body() storeData: CreateStoreDto): Promise<Store> {
     return this.storeService.create(storeData);
   }
 
-  @UseGuards(FirebaseAuthGuard)
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
   @Get(':id')
-  getOne(@Param('id') cakeId: string): Promise<DetailStoreResponseDto> {
-    return this.storeService.findOne(cakeId);
+  @ApiOperation({
+    summary: '매장 정보 요청',
+    description:
+      'ID를 이용하여 매장 정보를 요청합니다.' +
+      '\n\n' +
+      '권한이 필요하지 않습니다.',
+  })
+  @ApiParam(storeIdParams)
+  @ApiOkResponse({
+    description: '매장 정보 요청 성공',
+    type: DetailStoreResponseDto,
+  })
+  @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
+  getOne(
+    @Param('id') cakeId: string,
+    @GetUser() userDto: IUser,
+    @Query('latitude') latitude,
+    @Query('longitude') longitude,
+  ) {
+    //: Promise<DetailStoreResponseDto> {
+    return this.storeService.findOne(
+      cakeId,
+      userDto,
+      parseFloat(latitude),
+      parseFloat(longitude),
+    );
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Patch(':id')
-  update(@Param('id') storeId: string, @Body() updateStoreDto: UpdateStoreDto) {
-    return this.storeService.changeContent(storeId, updateStoreDto);
+  @ApiOperation({
+    summary: '매장 정보 수정',
+    description:
+      'ID를 이용하여 매장 정보를 수정합니다.' +
+      '\n\n' +
+      'Admin 또는 Seller 권한이 필요합니다.',
+  })
+  @ApiParam(storeIdParams)
+  @ApiOkResponse({
+    description: '매장 정보 수정 성공',
+    type: UpdateStoreDto,
+  })
+  @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
+  update(
+    @Param('id') storeId: string,
+    @Body() updateStoreDto: UpdateStoreDto,
+    @GetUser() userDto: IUser,
+  ) {
+    return this.storeService.changeContent(storeId, updateStoreDto, userDto);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)
   @Delete(':id')
-  remove(@Param('id') storeId: string) {
-    return this.storeService.removeContent(storeId);
+  @ApiOperation({
+    summary: '매장 정보 삭제',
+    description:
+      'ID를 이용하여 매장 정보를 삭제합니다.' +
+      '\n\n' +
+      'Admin 또는 Seller 권한이 필요합니다.',
+  })
+  @ApiParam(storeIdParams)
+  @ApiOkResponse({
+    description: '매장 정보 삭제 성공',
+  })
+  @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
+  remove(@Param('id') storeId: string, @GetUser() userDto: IUser) {
+    return this.storeService.removeContent(storeId, userDto);
   }
 }

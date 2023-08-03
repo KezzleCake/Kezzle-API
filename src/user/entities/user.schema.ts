@@ -12,9 +12,6 @@ export class User {
   @Prop({ type: String, required: true })
   nickname: string;
 
-  @Prop({ type: String, required: true, unique: true })
-  username: string;
-
   @Prop({ type: String, required: true })
   oauth_provider: string;
 

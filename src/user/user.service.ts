@@ -1,9 +1,5 @@
 import { Model } from 'mongoose';
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,6 +7,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { auth } from 'firebase-admin';
 import { UserResponseDto } from './dto/response-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserNotFoundException } from './exceptions/user-not-found';
+import { UserAlredyJoinedException } from './exceptions/user-already-joined.exception';
 
 @Injectable()
 export class UserService {
@@ -30,15 +28,13 @@ export class UserService {
     });
 
     if (user) {
-      //TODO:이미 가입된 사람은 저장거절
-      throw new Error('User already joined');
+      throw new UserAlredyJoinedException(firebaseUser.uid);
     }
 
     const createdUser = await new this.userModel({
       ...createUserDto,
       firebaseUid: firebaseUser.uid,
       oauth_provider: firebaseUser.firebase.sign_in_provider,
-      username: firebaseUser.name,
     });
     return await createdUser.save();
   }
@@ -49,42 +45,39 @@ export class UserService {
     return users.map((user) => new UserResponseDto(user));
   }
 
-  async findOneByFirebase(id: string): Promise<UserResponseDto> {
-    const user = await this.userModel.findOne({
-      firebaseUid: id,
-    });
+  async findOneByFirebase(userid: string): Promise<UserResponseDto> {
+    const user = await this.userModel
+      .findOne({
+        firebaseUid: userid,
+      })
+      .catch(() => {
+        throw new UserNotFoundException(userid);
+      });
     return new UserResponseDto(user);
   }
 
   async changeContent(userid: string, updateData: UpdateUserDto) {
-    try {
-      const user = await this.userModel.findOne({
-        firebaseUid: userid,
-      });
+    const user = await this.userModel.findOne({
+      firebaseUid: userid,
+    });
 
-      if (!user) {
-        throw new NotFoundException('유저를 찾을 수 없습니다.');
-      }
-      return await this.userModel.updateOne(
-        { firebaseUid: userid },
-        { $set: updateData },
-      );
-    } catch (error) {
-      throw new NotFoundException('유저를 찾을 수 없습니다.');
+    if (!user) {
+      throw new UserNotFoundException(userid);
     }
+    return await this.userModel.updateOne(
+      { firebaseUid: userid },
+      { $set: updateData },
+    );
   }
 
   async removeContent(userid: string) {
-    try {
-      const user = await this.userModel.findOne({
+    await this.userModel
+      .findOne({
         firebaseUid: userid,
+      })
+      .catch(() => {
+        throw new UserNotFoundException(userid);
       });
-      if (!user) {
-        throw new NotFoundException('유저를 찾을 수 없습니다.');
-      }
-      return await this.userModel.deleteOne({ firebaseUid: userid });
-    } catch (error) {
-      throw new NotFoundException('유저를 찾을 수 없습니다.');
-    }
+    return await this.userModel.deleteOne({ firebaseUid: userid });
   }
 }
