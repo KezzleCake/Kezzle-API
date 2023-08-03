@@ -6,7 +6,6 @@ import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
 import { Cake } from 'src/cake/entities/cake.schema';
 import { CakeAlredyLikeException } from 'src/cake/exceptions/cake-already-like.exception';
 import { CakeNotFoundException } from 'src/cake/exceptions/cake-not-found.exception';
-import { getDistanceFromLatLonInKm } from 'src/common/utils';
 import { StoreResponseDto } from 'src/store/dto/response-store.dto';
 import { Store } from 'src/store/entities/store.schema';
 import { StoreAlredyLikeException } from 'src/store/exceptions/store-already-like.exception';
@@ -52,24 +51,31 @@ export class LikeService {
         throw new UserNotFoundException(userid);
       });
 
-    const stores = await this.storeModel.find({
+    const storesNearby = await this.storeModel.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+          spherical: true,
+          distanceField: 'distance',
+        },
+      },
+    ]);
+
+    const storesLiked = await this.storeModel.find({
       _id: { $in: user.store_like_ids },
     });
+
+    const stores = storesNearby.filter((storeNearby) =>
+      storesLiked.some((storeLiked) => storeNearby._id.equals(storeLiked._id)),
+    );
+
     return Promise.all(
       stores.map(async (store) => {
         const cakes = await this.cakeService.findCake(store._id, Iuser);
-        const distanceInKm = getDistanceFromLatLonInKm(
-          latitude,
-          longitude,
-          store.location.coordinates[1],
-          store.location.coordinates[0],
-        );
-        return new StoreResponseDto(
-          store,
-          user.firebaseUid,
-          distanceInKm,
-          cakes,
-        );
+        return new StoreResponseDto(store, user.firebaseUid, cakes);
       }),
     );
   }

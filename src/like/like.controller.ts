@@ -7,6 +7,16 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LikeService } from './like.service';
 import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
 import { GetUser } from 'src/user/decorators/get-user.decorator';
@@ -17,37 +27,69 @@ import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/user/entities/roles.enum';
 import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 
+@ApiTags('likes')
 @Controller()
+@UseGuards(FirebaseAuthGuard, RolesGuard)
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
   @Get('users/:id/liked-cakes')
+  @ApiOperation({
+    summary: '유저가 좋아요한 케이크 전체 목록 요청',
+    description:
+      '페이지네이션된 케이크 목록을 요청합니다.' +
+      '\n\n' +
+      '권한이 필요하지 않습니다.',
+  })
+  @ApiParam({ name: 'id', description: '유저 ID' })
+  // TODO: @ApiPaginatedResponse(CakeResponseDto)
+  @ApiNoContentResponse({ description: '정보 없음.' })
   getCake(@Param('id') userId: string): Promise<CakeResponseDto[]> {
     return this.likeService.findUserLikeCake(userId);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
   @Get('users/:id/liked-stores')
+  @ApiOperation({
+    summary: '유저가 좋아요한 매장 전체 목록 요청',
+    description:
+      '페이지네이션된 매장 목록을 요청합니다.' +
+      '\n\n' +
+      '권한이 필요하지 않습니다.',
+  })
+  @ApiParam({ name: 'id', description: '유저 ID' })
+  // TODO: @ApiPaginatedResponse(CakeResponseDto)
+  @ApiNoContentResponse({ description: '정보 없음.' })
   getStore(
     @Param('id') userId: string,
     @GetUser() userDto: IUser,
-    @Query('latitude') latitude: number,
-    @Query('longitude') longitude: number,
+    @Query('latitude') latitude,
+    @Query('longitude') longitude,
   ): Promise<StoreResponseDto[]> {
     return this.likeService.findUserLikeStore(
       userId,
       userDto,
-      latitude,
-      longitude,
+      parseFloat(latitude),
+      parseFloat(longitude),
     );
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
   @Post('cakes/:id/likes')
+  @ApiOperation({
+    summary: '케이크에 좋아요 생성',
+    description:
+      '케이크에 좋아요를 생성합니다.' + '\n\n' + '권한이 필요하지 않습니다',
+  })
+  @ApiParam({ name: 'id', description: '케이크 ID' })
+  @ApiCreatedResponse({
+    description: '케이크 좋아요 생성 성공',
+    type: CakeResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: '이미 좋아요를 눌렀습니다',
+  })
   likeCake(
     @Param('id') cakeId: string,
     @GetUser() userDto: IUser,
@@ -55,10 +97,18 @@ export class LikeController {
     return this.likeService.cakeAddLikeList(cakeId, userDto);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
-  @UseGuards(FirebaseAuthGuard)
   @Delete('cakes/:id/likes')
+  @ApiOperation({
+    summary: '케이크 좋아요 취소',
+    description:
+      '케이크에 좋아요를 취소합니다' + '\n\n' + '권한이 필요하지 않습니다',
+  })
+  @ApiParam({ name: 'id', description: '케이크 ID' })
+  @ApiOkResponse({
+    description: '케이크 좋아요 취소 성공',
+  })
+  @ApiNotFoundResponse({ description: '케이크를 찾을 수 없습니다.' })
   notLikeCake(
     @Param('id') cakeId: string,
     @GetUser() userDto: IUser,
@@ -66,10 +116,21 @@ export class LikeController {
     return this.likeService.cakeRemoveLikeList(cakeId, userDto);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
-  @UseGuards(FirebaseAuthGuard)
   @Post('stores/:id/likes')
+  @ApiOperation({
+    summary: '매장에 좋아요 생성',
+    description:
+      '매장에 좋아요를 생성합니다.' + '\n\n' + '권한이 필요하지 않습니다',
+  })
+  @ApiParam({ name: 'id', description: '매장 ID' })
+  @ApiCreatedResponse({
+    description: '매장 좋아요 생성 성공',
+    type: CakeResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: '이미 좋아요를 눌렀습니다',
+  })
   likeStore(
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,
@@ -77,10 +138,18 @@ export class LikeController {
     return this.likeService.storeAddLikeList(storeId, userDto);
   }
 
-  @UseGuards(FirebaseAuthGuard, RolesGuard)
   @RolesAllowed(Roles.BUYER)
-  @UseGuards(FirebaseAuthGuard)
   @Delete('stores/:id/likes')
+  @ApiOperation({
+    summary: '매장 좋아요 취소',
+    description:
+      '매장에 좋아요를 취소합니다' + '\n\n' + '권한이 필요하지 않습니다',
+  })
+  @ApiParam({ name: 'id', description: '매장 ID' })
+  @ApiOkResponse({
+    description: '매장 좋아요 취소 성공',
+  })
+  @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
   notLikeStore(
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,

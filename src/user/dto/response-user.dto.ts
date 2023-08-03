@@ -1,7 +1,11 @@
 import { Roles } from 'src/user/entities/roles.enum';
-
+import { ApiProperty } from '@nestjs/swagger';
 export class UserResponseDto {
   readonly firebaseUid: string;
+
+  @ApiProperty({
+    description: '유저 닉네임',
+  })
   readonly nickname: string;
   readonly roles: Roles;
 

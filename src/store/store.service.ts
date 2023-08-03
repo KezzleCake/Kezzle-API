@@ -8,7 +8,6 @@ import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 import { StoreResponseDto } from './dto/response-store.dto';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeService } from 'src/cake/cake.service';
-import { getDistanceFromLatLonInKm } from '../common/utils';
 import { StoreNotFoundException } from './exceptions/store-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
 
@@ -24,22 +23,22 @@ export class StoreService {
     latitude: number,
     longitude: number,
   ): Promise<StoreResponseDto[]> {
-    const stores = await this.storeModel.find().exec();
+    const stores = await this.storeModel.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+          spherical: true,
+          distanceField: 'distance',
+        },
+      },
+    ]);
     return Promise.all(
       stores.map(async (store) => {
         const cakes = await this.cakeService.findCake(store._id, user);
-        const distanceInKm = getDistanceFromLatLonInKm(
-          latitude,
-          longitude,
-          store.location.coordinates[1],
-          store.location.coordinates[0],
-        );
-        return new StoreResponseDto(
-          store,
-          user.firebaseUid,
-          distanceInKm,
-          cakes,
-        );
+        return new StoreResponseDto(store, user.firebaseUid, cakes);
       }),
     );
   }
@@ -55,17 +54,31 @@ export class StoreService {
     user: IUser,
     latitude: number,
     longitude: number,
-  ): Promise<DetailStoreResponseDto> {
+  ) {
+    //: Promise<DetailStoreResponseDto> {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
-    const distanceInKm = getDistanceFromLatLonInKm(
-      latitude,
-      longitude,
-      store.location.coordinates[1],
-      store.location.coordinates[0],
-    );
-    return new DetailStoreResponseDto(store, distanceInKm, user.firebaseUid);
+
+    const storeone = await this.storeModel.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+          spherical: true,
+          distanceField: 'distance',
+        },
+      },
+      {
+        $match: {
+          _id: store._id,
+        },
+      },
+    ]);
+
+    return new DetailStoreResponseDto(storeone[0], user.firebaseUid);
   }
 
   async changeContent(

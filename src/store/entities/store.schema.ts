@@ -24,7 +24,11 @@ export class Store {
   @Prop({ type: String, default: '' })
   kakako_url: string;
 
-  @Prop({ type: LocationSchema, required: true })
+  // @Prop({ type: LocationSchema, required: true })
+  @Prop({
+    type: LocationSchema,
+    // index: '2dsphere',
+  })
   location: Location;
 
   @Prop({ required: true, default: '' })
@@ -49,4 +53,6 @@ export class Store {
   taste: string[];
 }
 
-export const StoreSchema = SchemaFactory.createForClass(Store);
+const StoreSchema = SchemaFactory.createForClass(Store);
+StoreSchema.index({ location: '2dsphere' });
+export { StoreSchema };

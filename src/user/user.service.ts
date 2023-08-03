@@ -35,7 +35,6 @@ export class UserService {
       ...createUserDto,
       firebaseUid: firebaseUser.uid,
       oauth_provider: firebaseUser.firebase.sign_in_provider,
-      username: firebaseUser.name,
     });
     return await createdUser.save();
   }
