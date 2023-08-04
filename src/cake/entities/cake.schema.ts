@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 import { Image, ImageSchema } from '../../common/entities/image.Schema';
 
 export type CakeDocument = Cake & Document;
@@ -16,4 +17,7 @@ export class Cake {
   owner_store_id: string;
 }
 
-export const CakeSchema = SchemaFactory.createForClass(Cake);
+const schema = SchemaFactory.createForClass(Cake);
+//TODO: 왜 mongoosePaginate뒤에 default를 붙여야하는 걸까
+schema.plugin(mongoosePaginate.default);
+export const CakeSchema = schema;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PaginateModel } from 'mongoose';
 import { CakeService } from 'src/cake/cake.service';
 import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
 import { Cake } from 'src/cake/entities/cake.schema';
@@ -18,7 +18,7 @@ import IUser from 'src/user/interfaces/user.interface';
 export class LikeService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
+    @InjectModel(Cake.name) private readonly cakeModel: PaginateModel<Cake>,
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
     private readonly cakeService: CakeService,
   ) {}
@@ -37,6 +37,7 @@ export class LikeService {
     });
     return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
   }
+
   async findUserLikeStore(
     userid: string,
     Iuser: IUser,
