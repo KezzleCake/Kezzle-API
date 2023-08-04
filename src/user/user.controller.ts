@@ -8,6 +8,7 @@ import {
   Delete,
   Param,
   Patch,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,

@@ -1,3 +1,4 @@
+import { PageableQuery } from './../common/query/pageable.query';
 import {
   Controller,
   Get,
@@ -7,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Post,
+  Query,
+  Res,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -28,8 +31,10 @@ import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeResponseDto } from './dto/response-cake.dto';
-import { Cake } from './entities/cake.schema';
 import { CreateCakeDto } from './dto/create-cake.dto';
+import { Response } from 'express';
+import { ApiPaginatedResponse } from 'src/common/decorator/api-paginated-response.decorator';
+import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
 
 const cakeIdParams = {
   name: 'id',
@@ -54,10 +59,18 @@ export class CakeController {
       '\n\n' +
       '권한이 필요하지 않습니다.',
   })
-  // TODO: @ApiPaginatedResponse(CakeResponseDto)
+  @ApiPaginatedResponse(CakeResponseDto)
   @ApiNoContentResponse({ description: '정보 없음.' })
-  getAll(@GetUser() userDto: IUser): Promise<CakeResponseDto[]> {
-    return this.cakeService.findAll(userDto);
+  async getAll(
+    @GetUser() userDto: IUser,
+    @Query() pageable: PageableQuery,
+    @Res() response: Response,
+  ): Promise<Response> {
+    const cakes = await this.cakeService.findAll(userDto, pageable);
+    if (cakes.docs.length === 0) {
+      return response.status(204).send();
+    }
+    return response.status(200).json(cakes);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
@@ -141,7 +154,7 @@ export class CakeController {
     @Body() cakeData: CreateCakeDto,
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,
-  ): Promise<Cake> {
+  ): Promise<CakeCreateResponseDto> {
     return this.cakeService.createCake(cakeData, storeId, userDto);
   }
 

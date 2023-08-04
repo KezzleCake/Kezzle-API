@@ -109,7 +109,10 @@ export class StoreService {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
-    if (store.owner_user_id !== user.firebaseUid) {
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
     return await this.storeModel.deleteOne({ _id: storeid });

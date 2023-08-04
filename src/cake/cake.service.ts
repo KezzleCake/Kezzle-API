@@ -7,20 +7,41 @@ import { CakeResponseDto } from './dto/response-cake.dto';
 import IUser from 'src/user/interfaces/user.interface';
 import { CreateCakeDto } from './dto/create-cake.dto';
 import { Store } from 'src/store/entities/store.schema';
+import { PaginateModel, PaginateResult } from 'mongoose';
 import { CakeNotFoundException } from './exceptions/cake-not-found.exception';
 import { StoreNotFoundException } from 'src/store/exceptions/store-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
+import { PageableQuery } from 'src/common/query/pageable.query';
+import { Roles } from 'src/user/entities/roles.enum';
+import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
 
 @Injectable()
 export class CakeService {
   constructor(
-    @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
+    @InjectModel(Cake.name)
+    private readonly cakeModel: PaginateModel<Cake>,
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
   ) {}
 
-  async findAll(user: IUser): Promise<CakeResponseDto[]> {
-    const cakes = await this.cakeModel.find().exec();
-    return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
+  async findAll(
+    user: IUser,
+    pageable: PageableQuery,
+  ): Promise<PaginateResult<CakeResponseDto>> {
+    const cakes = await this.cakeModel.paginate(
+      {},
+      {
+        page: pageable.page,
+        limit: pageable.size ? pageable.size : 10,
+        sort: { createdAt: -1 }, //최신순으로 정렬
+      },
+    );
+
+    return {
+      ...cakes,
+      docs: cakes.docs.map(
+        (cake) => new CakeResponseDto(cake, user.firebaseUid),
+      ),
+    };
   }
 
   async findOne(cakeid: string, user: IUser): Promise<CakeResponseDto> {
@@ -31,7 +52,7 @@ export class CakeService {
   }
 
   async changeContent(cakeid: string, updateData: UpdateCakeDto, user: IUser) {
-    const cake = await this.cakeModel.findById(cakeid).catch(() => {
+    const cake = await this.cakeModel.findOne({ _id: cakeid }).catch(() => {
       throw new CakeNotFoundException(cakeid);
     });
     const store = await this.storeModel
@@ -40,7 +61,10 @@ export class CakeService {
         throw new StoreNotFoundException(cake.owner_store_id);
       });
 
-    if (store.owner_user_id !== user.firebaseUid) {
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
     return await this.cakeModel.updateOne(
@@ -62,7 +86,10 @@ export class CakeService {
       .catch(() => {
         throw new StoreNotFoundException(cake.owner_store_id);
       });
-    if (store.owner_user_id !== user.firebaseUid) {
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
     return await this.cakeModel.deleteOne({ _id: cakeid });
@@ -72,18 +99,21 @@ export class CakeService {
     createCakeDto: CreateCakeDto,
     storeid,
     user: IUser,
-  ): Promise<Cake> {
+  ): Promise<CakeCreateResponseDto> {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
-    if (store.owner_user_id !== user.firebaseUid) {
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
-    const createdStore = new this.cakeModel({
+    const cake = await this.cakeModel.create({
       ...createCakeDto,
       owner_store_id: storeid,
     });
-    return await createdStore.save();
+    return new CakeCreateResponseDto(cake);
   }
 
   async findCake(storeid, user: IUser): Promise<CakeResponseDto[]> {
