@@ -7,7 +7,8 @@ import { CakeModule } from './cake/cake.module';
 import { AuthModule } from './auth/auth.module';
 import { LikeModule } from './like/like.module';
 import { StoreModule } from './store/store.module';
-import { CustomExceptionFilter } from './config/custom-exception.filter';
+// import { CustomExceptionFilter } from './config/custom-exception.filter';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -24,13 +25,14 @@ import { CustomExceptionFilter } from './config/custom-exception.filter';
     AuthModule,
     LikeModule,
     StoreModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: CustomExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: CustomExceptionFilter,
+    // },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Image, ImageSchema } from '../../common/entities/image.Schema';
+import { Image, ImageSchema } from '../../upload/entities/image.Schema';
 import { LocationSchema, Location } from './location.schema';
 
 export type StoreDocument = Store & Document;
@@ -24,6 +24,9 @@ export class Store {
   @Prop({ type: String, default: '' })
   kakako_url: string;
 
+  @Prop({ type: String, default: '' })
+  kakao_map_url: string;
+
   @Prop({
     type: LocationSchema,
   })
@@ -38,7 +41,7 @@ export class Store {
   @Prop({ type: String, ref: 'User', required: true })
   owner_user_id: string;
 
-  @Prop({ type: ImageSchema })
+  @Prop({ type: [ImageSchema] })
   detail_images: Image[];
 
   @Prop({ type: [{ type: String }] })

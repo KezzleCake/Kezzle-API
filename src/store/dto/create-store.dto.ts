@@ -1,7 +1,14 @@
-import { Image } from '../../common/entities/image.Schema';
 import { LocationDto } from './response-location.dto';
-import { IsNotEmpty, IsString, IsOptional, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { ImageRequestDto } from 'src/upload/dto/Image-request.dto';
 
 export class CreateStoreDto {
   @IsNotEmpty()
@@ -13,11 +20,11 @@ export class CreateStoreDto {
 
   @IsOptional()
   @ApiProperty({
-    type: Image,
+    type: ImageRequestDto,
     description: '케이크 매장 로고 사진',
     required: false,
   })
-  readonly logo: Image;
+  readonly logo: ImageRequestDto;
 
   @IsOptional()
   @IsString()
@@ -83,12 +90,15 @@ export class CreateStoreDto {
   readonly owner_user_id: string;
 
   @IsOptional()
+  @IsArray()
+  @Type(() => ImageRequestDto)
+  @ValidateNested({ each: true })
   @ApiProperty({
-    type: Image,
-    description: '케이크 매장 소개 이미지들',
+    type: [ImageRequestDto],
+    description: '가게 관련 이미지들',
     required: false,
   })
-  readonly detail_images: Image[];
+  readonly detailImages?: ImageRequestDto[];
 
   @IsArray()
   @ApiProperty({

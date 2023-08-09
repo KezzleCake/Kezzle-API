@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Image } from '../../common/entities/image.Schema';
+import { ImageRequestDto } from '../../upload/dto/Image-request.dto';
 
 export class CreateCakeDto {
   @ValidateNested()
   @Type(() => Image)
   @IsNotEmpty()
   @ApiProperty({
-    type: Image,
+    type: ImageRequestDto,
     description: '케이크에 관련된 이미지',
     example: {
       name: '1.png',
@@ -17,5 +17,5 @@ export class CreateCakeDto {
     },
     required: true,
   })
-  readonly image: Image;
+  readonly image: ImageRequestDto;
 }

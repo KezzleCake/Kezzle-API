@@ -1,4 +1,4 @@
-import { Image } from '../../common/entities/image.Schema';
+import { Image } from '../../upload/entities/image.Schema';
 import { IsOptional, IsString, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { LocationDto } from './response-location.dto';

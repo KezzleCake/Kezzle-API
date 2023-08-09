@@ -1,8 +1,8 @@
-service: kezzle-api
+service: kezzle-api-2
 
 plugins:
   - serverless-offline
-  - serverless-plugin-typescript
+  # - serverless-plugin-typescript
   - serverless-dotenv-plugin
 
 provider:
@@ -10,15 +10,36 @@ provider:
   region: ap-northeast-2
   stage: dev
   runtime: nodejs18.x
+  ecr:
+    images:
+      appimage:
+        path: ./
+        platform: linux/amd64
 
-package:
-  exclude:
-    - node_modules/aws-sdk/**
+# package:
+#   individually: true
+# exclude:
+#   - node_modules/aws-sdk/**
+
+# functions:
+#   main:
+#     handler: src/lambda.handler
+#     events:
+#       - http:
+#           method: ANY
+#           path: '{proxy+}'
 
 functions:
   main:
-    handler: src/lambda.handler
+    architecture: x86_64
+    image:
+      name: appimage
+      command:
+        - dist/lambda.handler
+      entryPoint:
+        - '/lambda-entrypoint.sh'
+    # handler: src/lambda.handler
     events:
       - http:
-          method: ANY
-          path: '{proxy+}'
+          method: any
+          path: /{any+}

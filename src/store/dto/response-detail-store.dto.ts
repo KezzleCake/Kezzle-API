@@ -1,4 +1,4 @@
-import { Image } from '../../common/entities/image.Schema';
+import { ImageRequestDto } from '../../upload/dto/Image-request.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DetailStoreResponseDto {
@@ -14,11 +14,11 @@ export class DetailStoreResponseDto {
   readonly name: string;
 
   @ApiProperty({
-    type: Image,
+    type: ImageRequestDto,
     description: '케이크 매장 로고 사진',
     required: false,
   })
-  readonly logo: Image;
+  readonly logo: ImageRequestDto;
 
   @ApiProperty({
     description: '케이크 매장 주소',
@@ -60,11 +60,11 @@ export class DetailStoreResponseDto {
   readonly phone_number: string;
 
   @ApiProperty({
-    type: Image,
+    type: ImageRequestDto,
     description: '케이크 매장 소개 사진들',
     required: false,
   })
-  readonly detail_images: Image[];
+  readonly detail_images: ImageRequestDto[];
 
   @ApiProperty({
     description: '케이크 매장 오픈 시간 ',
@@ -96,9 +96,27 @@ export class DetailStoreResponseDto {
 
   @ApiProperty({
     description: '매장에서 유저가 설정한 위치와 거리',
-    example: '12041.93542697711 == 12km',
+    example: '12041.93542697711 == 12.041(km)',
   })
   readonly distance: string;
+
+  @ApiProperty({
+    description: '위도',
+    example: '3x.xxx',
+  })
+  readonly latitude: number;
+
+  @ApiProperty({
+    description: '경도',
+    example: '12x.xxxxxx',
+  })
+  readonly longitude: number;
+
+  @ApiProperty({
+    description: '매장 카카오맵 링크',
+    required: false,
+  })
+  readonly kakao_map_url: string;
 
   constructor(data: any, userid: string) {
     this._id = data?._id;
@@ -115,6 +133,9 @@ export class DetailStoreResponseDto {
     this.taste = data?.taste;
     this.is_liked = data?.user_like_ids.includes(userid);
     this.like_cnt = data?.user_like_ids.length;
+    this.longitude = data?.location.coordinates[0];
+    this.latitude = data?.location.coordinates[1];
+    this.kakao_map_url = data?.kakao_map_url;
     this.distance = data?.distance;
   }
 }

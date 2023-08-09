@@ -9,6 +9,7 @@ import { StoreResponseDto } from './dto/response-store.dto';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeService } from 'src/cake/cake.service';
 import { StoreNotFoundException } from './exceptions/store-not-found.exception';
+import { StoresNotFoundException } from './exceptions/stores-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
 import { Roles } from 'src/user/entities/roles.enum';
 
@@ -24,18 +25,23 @@ export class StoreService {
     latitude: number,
     longitude: number,
   ): Promise<StoreResponseDto[]> {
-    const stores = await this.storeModel.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: 'Point',
-            coordinates: [longitude, latitude],
+    const stores = await this.storeModel
+      .aggregate([
+        {
+          $geoNear: {
+            near: {
+              type: 'Point',
+              coordinates: [longitude, latitude],
+            },
+            spherical: true,
+            distanceField: 'distance',
           },
-          spherical: true,
-          distanceField: 'distance',
         },
-      },
-    ]);
+      ])
+      .catch(() => {
+        throw new StoresNotFoundException();
+      });
+
     return Promise.all(
       stores.map(async (store) => {
         const cakes = await this.cakeService.findCake(store._id, user);

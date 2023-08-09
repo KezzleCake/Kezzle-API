@@ -1,5 +1,5 @@
 import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
-import { Image } from '../../common/entities/image.Schema';
+import { Image } from '../../upload/entities/image.Schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StoreResponseDto {
@@ -7,7 +7,7 @@ export class StoreResponseDto {
     description: '케이크 매장 ID(ObjectId)',
     example: '60b4d1b3e6b0b3001b9b9b9b',
   })
-  readonly _id: string;
+  readonly id: string;
 
   @ApiProperty({
     description: '케이크 매장명',
@@ -35,7 +35,7 @@ export class StoreResponseDto {
 
   @ApiProperty({
     description: '매장에서 유저가 설정한 위치와 거리',
-    example: '10.1(km)',
+    example: '12041.93542697711 == 12.041(km)',
   })
   readonly distance: string;
 
@@ -46,7 +46,7 @@ export class StoreResponseDto {
   readonly cakes: CakeResponseDto[];
 
   constructor(data: any, userid: string, cakes: CakeResponseDto[]) {
-    this._id = data?._id;
+    this.id = data?._id;
     this.name = data?.name;
     this.logo = data?.logo;
     this.address = data?.address;
