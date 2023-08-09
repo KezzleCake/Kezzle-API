@@ -29,7 +29,6 @@ import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { StoreResponseDto } from './dto/response-store.dto';
-import { Store } from './entities/store.schema';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 
 const storeIdParams = {
@@ -82,7 +81,8 @@ export class StoreController {
   @ApiBadRequestResponse({
     description: 'request body의 조건이 잘못됨.',
   })
-  create(@Body() storeData: CreateStoreDto): Promise<Store> {
+  create(@Body() storeData: CreateStoreDto) {
+    //: Promise<Store> {
     return this.storeService.create(storeData);
   }
 

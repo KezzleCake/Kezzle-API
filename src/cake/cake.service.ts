@@ -25,13 +25,14 @@ export class CakeService {
 
   async findAll(
     user: IUser,
-    pageable: PageableQuery,
+    page: number,
+    limit: number,
   ): Promise<PaginateResult<CakeResponseDto>> {
     const cakes = await this.cakeModel.paginate(
       {},
       {
-        page: pageable.page,
-        limit: pageable.size ? pageable.size : 10,
+        page: page ? page : 1,
+        limit: limit ? limit : 15,
         sort: { createdAt: -1 }, //최신순으로 정렬
       },
     );

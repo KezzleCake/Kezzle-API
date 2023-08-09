@@ -38,12 +38,9 @@ export class LikeController {
   @ApiOperation({
     summary: '유저가 좋아요한 케이크 전체 목록 요청',
     description:
-      '페이지네이션된 케이크 목록을 요청합니다.' +
-      '\n\n' +
-      '권한이 필요하지 않습니다.',
+      '케이크 목록을 요청합니다.' + '\n\n' + '권한이 필요하지 않습니다.',
   })
   @ApiParam({ name: 'id', description: '유저 ID' })
-  // TODO: @ApiPaginatedResponse(CakeResponseDto)
   @ApiNoContentResponse({ description: '정보 없음.' })
   getCake(@Param('id') userId: string): Promise<CakeResponseDto[]> {
     return this.likeService.findUserLikeCake(userId);
@@ -59,7 +56,6 @@ export class LikeController {
       '권한이 필요하지 않습니다.',
   })
   @ApiParam({ name: 'id', description: '유저 ID' })
-  // TODO: @ApiPaginatedResponse(CakeResponseDto)
   @ApiNoContentResponse({ description: '정보 없음.' })
   getStore(
     @Param('id') userId: string,

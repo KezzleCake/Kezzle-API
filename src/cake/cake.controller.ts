@@ -63,10 +63,11 @@ export class CakeController {
   @ApiNoContentResponse({ description: '정보 없음.' })
   async getAll(
     @GetUser() userDto: IUser,
-    @Query() pageable: PageableQuery,
     @Res() response: Response,
+    @Query('page') page,
+    @Query('limit') limit,
   ): Promise<Response> {
-    const cakes = await this.cakeService.findAll(userDto, pageable);
+    const cakes = await this.cakeService.findAll(userDto, page, limit);
     if (cakes.docs.length === 0) {
       return response.status(204).send();
     }

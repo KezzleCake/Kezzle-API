@@ -1,15 +1,15 @@
 import { IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { Image } from '../../common/entities/image.Schema';
+import { ImageRequestDto } from '../../upload/dto/Image-request.dto';
 
 export class UpdateCakeDto {
   @ValidateNested()
-  @Type(() => Image)
+  @Type(() => ImageRequestDto)
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty({
-    type: Image,
+    type: ImageRequestDto,
     description: '케이크에 관련된 이미지',
     example: {
       name: '1.png',
@@ -18,5 +18,5 @@ export class UpdateCakeDto {
     },
     required: false,
   })
-  readonly image?: Image;
+  readonly ImageRequestDto?: ImageRequestDto;
 }

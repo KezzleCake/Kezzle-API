@@ -8,7 +8,6 @@ import {
   Delete,
   Param,
   Patch,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -56,7 +55,7 @@ export class UserController {
 
   @Post()
   @ApiOperation({
-    summary: '특정 유저의 케이크 생성',
+    summary: '유저 생성',
     description: '유저를 생성합니다.' + '\n\n' + '권한이 필요없습니다.',
   })
   @ApiCreatedResponse({

@@ -5,7 +5,7 @@ export class PageableQuery {
   @IsOptional()
   @IsNumber()
   @ApiProperty({ description: '현재 페이지 번호', example: 1, default: 1 })
-  readonly page: number = 1;
+  readonly page: number;
 
   @IsOptional()
   @IsNumber()
