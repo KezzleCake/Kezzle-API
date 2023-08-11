@@ -14,7 +14,7 @@ export class ImageResponseDto {
     description: '파일 업로드 후 바뀐 파일명',
     example: '41f1904d-cb2e-45f3-b5ee-072bc49cba11.png',
   })
-  readonly converted_name: string;
+  readonly converte_name: string;
 
   @IsString()
   @ApiProperty({
@@ -26,7 +26,7 @@ export class ImageResponseDto {
 
   constructor(data) {
     this.name = data.name;
-    this.converted_name = data.converted_name;
+    this.converte_name = data.converte_name;
     this.s3Url = data.s3Url;
   }
 }

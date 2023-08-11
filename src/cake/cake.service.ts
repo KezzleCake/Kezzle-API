@@ -117,8 +117,10 @@ export class CakeService {
     ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
+    //TODO: 이거 나중에 확인해야함
 
-    const image = await this.uploadService.create('cake', file);
+    const path = store.name + '/cakes';
+    const image = await this.uploadService.create('path', file);
 
     const cake = await this.cakeModel.create({
       image: image,
@@ -166,5 +168,20 @@ export class CakeService {
       (cake) => new CakeResponseDto(cake, user.firebaseUid),
     );
     return new CakesResponseDto(cakeResponse, hasMore);
+  }
+
+  async findStoreCake(storeid, user: IUser) {
+    await this.storeModel.findById(storeid).catch(() => {
+      throw new StoreNotFoundException(storeid);
+    });
+
+    const cakes = await this.cakeModel
+      .find({
+        owner_store_id: storeid,
+      })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
   }
 }

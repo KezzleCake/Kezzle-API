@@ -1,6 +1,6 @@
 import { Image } from '../../upload/entities/image.Schema';
 import { ApiProperty } from '@nestjs/swagger';
-import { CakesResponseDto } from 'src/cake/dto/response-cakes.dto';
+import { CakeResponseDto } from 'src/cake/dto/response-cake.dto';
 
 export class StoreResponseDto {
   @ApiProperty({
@@ -40,18 +40,18 @@ export class StoreResponseDto {
   readonly distance: string;
 
   @ApiProperty({
-    type: CakesResponseDto,
+    type: CakeResponseDto,
     description: '매장에서 가지고 있는 케이크들',
   })
-  readonly cakes: CakesResponseDto;
+  readonly cakes: CakeResponseDto[];
 
-  constructor(data: any, userid: string, cakes: CakesResponseDto) {
+  constructor(data: any, userid: string, cakes: CakeResponseDto[]) {
     this._id = data?._id;
     this.name = data?.name;
     this.logo = data?.logo;
     this.address = data?.address;
     this.isLiked = data?.user_like_ids.includes(userid);
-    this.distance = data?.distance;
+    this.distance = data?.dist;
     this.cakes = cakes;
   }
 }
