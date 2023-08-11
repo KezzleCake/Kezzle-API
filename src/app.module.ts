@@ -2,14 +2,12 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_PIPE } from '@nestjs/core';
 import { CakeModule } from './cake/cake.module';
 import { AuthModule } from './auth/auth.module';
 import { LikeModule } from './like/like.module';
 import { StoreModule } from './store/store.module';
-// import { CustomExceptionFilter } from './config/custom-exception.filter';
 import { UploadModule } from './upload/upload.module';
-import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -28,12 +26,8 @@ import { AppController } from './app.controller';
     StoreModule,
     UploadModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: CustomExceptionFilter,
-    // },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,

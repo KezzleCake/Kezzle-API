@@ -79,7 +79,6 @@ export class UpdateStoreDto {
   })
   readonly operating_time?: string[];
 
-  @IsOptional()
   @IsArray()
   @ApiProperty({
     type: String,

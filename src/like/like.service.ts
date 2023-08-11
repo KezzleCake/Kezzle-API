@@ -60,7 +60,7 @@ export class LikeService {
             coordinates: [longitude, latitude],
           },
           spherical: true,
-          distanceField: 'distance',
+          distanceField: 'dist',
         },
       },
       {
@@ -70,12 +70,12 @@ export class LikeService {
       },
     ]);
 
-    // return Promise.all(
-    //   stores.map(async (store) => {
-    //     const cakes = await this.cakeService.findCake(store._id, Iuser);
-    //     return new StoreResponseDto(store, user.firebaseUid, cakes);
-    //   }),
-    // );
+    return Promise.all(
+      stores.map(async (store) => {
+        const cakes = await this.cakeService.findStoreCake(store._id, Iuser);
+        return new StoreResponseDto(store, user.firebaseUid, cakes);
+      }),
+    );
   }
 
   async cakeAddLikeList(cakeid: string, user: IUser): Promise<boolean> {

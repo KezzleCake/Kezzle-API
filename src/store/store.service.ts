@@ -3,7 +3,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Store } from './entities/store.schema';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 import { StoreResponseDto } from './dto/response-store.dto';
 import IUser from 'src/user/interfaces/user.interface';
@@ -16,6 +16,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { UpdateStoreLogoDto } from './dto/update-store-logo.dto';
 import { S3 } from 'aws-sdk';
 import { StoresResponseDto } from './dto/response-stores.dto';
+import { UpdateStoreImageDto } from './dto/update-store-image.dto';
 
 @Injectable()
 export class StoreService {
@@ -35,46 +36,33 @@ export class StoreService {
   ) {
     let stores;
 
-    if (stores === undefined) {
-      stores = await this.storeModel
-        .aggregate([
-          {
-            $geoNear: {
-              near: { type: 'Point', coordinates: [127.044811, 37.5038134] },
-              distanceField: 'dist',
-              spherical: true,
-            },
-          },
-        ])
-        .limit(limit + 1)
-        .catch(() => {
-          throw new StoresNotFoundException();
-        });
-    } else {
-      stores = await this.storeModel
-        .aggregate([
-          {
-            $geoNear: {
-              near: { type: 'Point', coordinates: [127.044811, 37.5038134] },
-              distanceField: 'dist',
-              spherical: true,
-            },
-          },
-          {
-            $match: {
-              dist: {
-                $gt: after,
-              },
-            },
-          },
-        ])
-        .limit(limit + 2)
-        .catch(() => {
-          throw new StoresNotFoundException();
-        });
-      stores.shift();
-    }
+    const geoNear: PipelineStage.GeoNear = {
+      $geoNear: {
+        near: { type: 'Point', coordinates: [longitude, latitude] },
+        distanceField: 'dist',
+        spherical: true,
+      },
+    };
 
+    const match: PipelineStage.Match = {
+      $match: {
+        dist: {
+          $gt: after,
+        },
+      },
+    };
+
+    const pipeline = [geoNear, match];
+
+    if (Number.isNaN(after)) {
+      pipeline.pop();
+    }
+    stores = await this.storeModel
+      .aggregate(pipeline)
+      .limit(limit + 1)
+      .catch(() => {
+        throw new StoresNotFoundException();
+      });
     let hasMore = false;
 
     if (stores.length > limit) {
@@ -84,12 +72,7 @@ export class StoreService {
 
     const storeResponse = await Promise.all(
       stores.map(async (store) => {
-        const cakes = await this.cakeService.findCake(
-          store._id,
-          user,
-          undefined,
-          20,
-        );
+        const cakes = await this.cakeService.findStoreCake(store._id, user);
         return await new StoreResponseDto(store, user.firebaseUid, cakes);
       }),
     );
@@ -183,11 +166,13 @@ export class StoreService {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
 
+    const path = store.name + '/logo';
+
     if (store.logo !== undefined) {
-      await this.uploadService.remove('store/logo', store.logo.s3Url);
+      await this.uploadService.remove(path, store.logo.s3Url);
     }
     const updatedata = new UpdateStoreLogoDto(
-      await this.uploadService.create('store/logo', file),
+      await this.uploadService.create(path, file),
     );
 
     return await this.storeModel.updateOne(
@@ -200,20 +185,59 @@ export class StoreService {
     );
   }
 
-  //TODO: 조금있다가 고치기
-  // async changeDetailImage(storeid: string, user: IUser, files) {
-  //   const params = {
-  //     Bucket: process.env.A_BUCKET_NAME,
-  //     Key: `store/detailimage`,
-  //     Body: files.buffer,
-  //     ACL: 'public-read',
-  //     ContentType: `image/png`,
-  //   };
-  //   const data = await this.s3
-  //     .upload(params)
-  //     .promise()
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // }
+  async Imageupload(storeid: string, user: IUser, file) {
+    const store = await this.storeModel.findById(storeid).catch(() => {
+      throw new StoreNotFoundException(storeid);
+    });
+
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
+      throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
+    }
+
+    const path = store.name + '/detail';
+
+    const updatedata = new UpdateStoreImageDto(
+      await this.uploadService.create(path, file),
+      store.detail_images,
+    );
+
+    return await this.storeModel.updateOne(
+      {
+        _id: storeid,
+      },
+      {
+        $set: updatedata,
+      },
+    );
+  }
+
+  async Imageremove(storeid: string, user: IUser, fileIdx: number) {
+    const store = await this.storeModel.findById(storeid).catch(() => {
+      throw new StoreNotFoundException(storeid);
+    });
+
+    if (
+      store.owner_user_id !== user.firebaseUid &&
+      !user.roles.includes(Roles.ADMIN)
+    ) {
+      throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
+    }
+
+    const path = store.name + '/detail';
+
+    const deleteData = store.detail_images.splice(fileIdx, 1);
+    await this.uploadService.remove(path, deleteData[0].s3Url);
+
+    return await this.storeModel.updateOne(
+      {
+        _id: storeid,
+      },
+      {
+        $set: store,
+      },
+    );
+  }
 }

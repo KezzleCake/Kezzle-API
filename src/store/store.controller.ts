@@ -68,7 +68,7 @@ export class StoreController {
       userDto,
       parseFloat(latitude),
       parseFloat(longitude),
-      parseInt(after),
+      parseFloat(after),
       parseInt(limit),
     );
   }
@@ -185,28 +185,24 @@ export class StoreController {
     return this.storeService.changeLogo(storeId, userDto, file);
   }
 
-  //TODO: 조금 있다가 고치기
-  // @RolesAllowed(Roles.SELLER, Roles.ADMIN)
-  // @Patch(':id/uploads/detailimage')
-  // @UseInterceptors(FilesInterceptor('file', 10))
-  // @ApiOperation({
-  //   summary: '매장 소개 이미지 정보 수정',
-  //   description:
-  //     'ID를 이용하여 매장 소개 이미지 정보를 수정합니다.' +
-  //     '\n\n' +
-  //     'Admin 또는 Seller 권한이 필요합니다.',
-  // })
-  // @ApiParam(storeIdParams)
-  // @ApiOkResponse({
-  //   description: '매장 소개 이미지 정보 수정 성공',
-  //   type: UpdateStoreDto,
-  // })
-  // @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
-  // updateDetailImage(
-  //   @Param('id') storeId: string,
-  //   @GetUser() userDto: IUser,
-  //   @UploadedFiles() files,
-  // ) {
-  //   return this.storeService.changeDetailImage(storeId, userDto, files);
-  // }
+  @RolesAllowed(Roles.SELLER, Roles.ADMIN)
+  @Patch(':id/uploads/storeimage')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(
+    @Param('id') storeId: string,
+    @GetUser() userDto: IUser,
+    @UploadedFile() file,
+  ) {
+    return this.storeService.Imageupload(storeId, userDto, file);
+  }
+
+  @RolesAllowed(Roles.SELLER, Roles.ADMIN)
+  @Delete(':id/deletes/storeimage')
+  removeImage(
+    @Param('id') storeId: string,
+    @GetUser() userDto: IUser,
+    @Query('index') fileIdx,
+  ) {
+    return this.storeService.Imageremove(storeId, userDto, parseInt(fileIdx));
+  }
 }
