@@ -7,7 +7,9 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -30,6 +32,7 @@ import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { StoreResponseDto } from './dto/response-store.dto';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 const storeIdParams = {
   name: 'id',
@@ -53,17 +56,20 @@ export class StoreController {
       '\n\n' +
       '권한이 필요하지 않습니다.',
   })
-  // TODO: @ApiPaginatedResponse(StoreResponseDto)
   @ApiNoContentResponse({ description: '정보 없음.' })
   getAll(
     @GetUser() userDto: IUser,
     @Query('latitude') latitude,
     @Query('longitude') longitude,
-  ): Promise<StoreResponseDto[]> {
+    @Query('after') after,
+    @Query('count') limit,
+  ) {
     return this.storeService.findAll(
       userDto,
       parseFloat(latitude),
       parseFloat(longitude),
+      parseInt(after),
+      parseInt(limit),
     );
   }
 
@@ -82,7 +88,6 @@ export class StoreController {
     description: 'request body의 조건이 잘못됨.',
   })
   create(@Body() storeData: CreateStoreDto) {
-    //: Promise<Store> {
     return this.storeService.create(storeData);
   }
 
@@ -155,4 +160,53 @@ export class StoreController {
   remove(@Param('id') storeId: string, @GetUser() userDto: IUser) {
     return this.storeService.removeContent(storeId, userDto);
   }
+
+  @RolesAllowed(Roles.SELLER, Roles.ADMIN)
+  @Patch(':id/uploads/logo')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: '매장 정보 로고 수정',
+    description:
+      'ID를 이용하여 매장 로고 정보를 수정합니다.' +
+      '\n\n' +
+      'Admin 또는 Seller 권한이 필요합니다.',
+  })
+  @ApiParam(storeIdParams)
+  @ApiOkResponse({
+    description: '매장 로고 정보 수정 성공',
+    type: UpdateStoreDto,
+  })
+  @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
+  updateLogo(
+    @Param('id') storeId: string,
+    @GetUser() userDto: IUser,
+    @UploadedFile() file,
+  ) {
+    return this.storeService.changeLogo(storeId, userDto, file);
+  }
+
+  //TODO: 조금 있다가 고치기
+  // @RolesAllowed(Roles.SELLER, Roles.ADMIN)
+  // @Patch(':id/uploads/detailimage')
+  // @UseInterceptors(FilesInterceptor('file', 10))
+  // @ApiOperation({
+  //   summary: '매장 소개 이미지 정보 수정',
+  //   description:
+  //     'ID를 이용하여 매장 소개 이미지 정보를 수정합니다.' +
+  //     '\n\n' +
+  //     'Admin 또는 Seller 권한이 필요합니다.',
+  // })
+  // @ApiParam(storeIdParams)
+  // @ApiOkResponse({
+  //   description: '매장 소개 이미지 정보 수정 성공',
+  //   type: UpdateStoreDto,
+  // })
+  // @ApiNotFoundResponse({ description: '매장을 찾을 수 없습니다.' })
+  // updateDetailImage(
+  //   @Param('id') storeId: string,
+  //   @GetUser() userDto: IUser,
+  //   @UploadedFiles() files,
+  // ) {
+  //   return this.storeService.changeDetailImage(storeId, userDto, files);
+  // }
 }

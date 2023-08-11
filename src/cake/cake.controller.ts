@@ -1,15 +1,14 @@
-import { PageableQuery } from './../common/query/pageable.query';
 import {
   Controller,
   Get,
-  Body,
   Param,
   Patch,
   Delete,
   UseGuards,
   Post,
   Query,
-  Res,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -23,7 +22,6 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CakeService } from './cake.service';
-import { UpdateCakeDto } from './dto/update-cake.dto';
 import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/user/entities/roles.enum';
@@ -31,10 +29,9 @@ import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeResponseDto } from './dto/response-cake.dto';
-import { CreateCakeDto } from './dto/create-cake.dto';
-import { Response } from 'express';
-import { ApiPaginatedResponse } from 'src/common/decorator/api-paginated-response.decorator';
 import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CakesResponseDto } from './dto/response-cakes.dto';
 
 const cakeIdParams = {
   name: 'id',
@@ -59,19 +56,13 @@ export class CakeController {
       '\n\n' +
       '권한이 필요하지 않습니다.',
   })
-  @ApiPaginatedResponse(CakeResponseDto)
   @ApiNoContentResponse({ description: '정보 없음.' })
   async getAll(
     @GetUser() userDto: IUser,
-    @Res() response: Response,
-    @Query('page') page,
-    @Query('limit') limit,
-  ): Promise<Response> {
-    const cakes = await this.cakeService.findAll(userDto, page, limit);
-    if (cakes.docs.length === 0) {
-      return response.status(204).send();
-    }
-    return response.status(200).json(cakes);
+    @Query('after') after,
+    @Query('count') limit,
+  ): Promise<CakesResponseDto> {
+    return await this.cakeService.findAll(userDto, after, parseInt(limit));
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
@@ -98,6 +89,7 @@ export class CakeController {
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
   @Patch('cakes/:id')
+  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: '케이크 정보 수정',
     description:
@@ -113,10 +105,10 @@ export class CakeController {
   @ApiNotFoundResponse({ description: '케이크를 찾을 수 없습니다.' })
   modify(
     @Param('id') cakeId: string,
-    @Body() updateData: UpdateCakeDto,
+    @UploadedFile() file,
     @GetUser() userDto: IUser,
   ) {
-    return this.cakeService.changeContent(cakeId, updateData, userDto);
+    return this.cakeService.changeContent(cakeId, userDto, file);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
@@ -139,6 +131,7 @@ export class CakeController {
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
   @Post('stores/:id/cakes')
+  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: '특정 매장의 케이크 생성',
     description:
@@ -152,11 +145,11 @@ export class CakeController {
     description: 'request body의 조건이 잘못됨.',
   })
   createCake(
-    @Body() cakeData: CreateCakeDto,
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,
+    @UploadedFile() file,
   ): Promise<CakeCreateResponseDto> {
-    return this.cakeService.createCake(cakeData, storeId, userDto);
+    return this.cakeService.createCake(storeId, userDto, file);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
@@ -177,7 +170,9 @@ export class CakeController {
   getStoreCake(
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,
-  ): Promise<CakeResponseDto[]> {
-    return this.cakeService.findCake(storeId, userDto);
+    @Query('after') after,
+    @Query('count') limit,
+  ): Promise<CakesResponseDto> {
+    return this.cakeService.findCake(storeId, userDto, after, parseInt(limit));
   }
 }

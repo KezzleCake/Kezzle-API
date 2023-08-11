@@ -5,14 +5,6 @@ import { LocationDto } from './response-location.dto';
 
 export class UpdateStoreDto {
   @IsOptional()
-  @ApiProperty({
-    type: Image,
-    description: '케이크 매장 로고 사진',
-    required: false,
-  })
-  readonly logo?: Image;
-
-  @IsOptional()
   @IsString()
   @ApiProperty({
     description: '케이크 매장 간단소개',

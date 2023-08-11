@@ -62,7 +62,8 @@ export class LikeController {
     @GetUser() userDto: IUser,
     @Query('latitude') latitude,
     @Query('longitude') longitude,
-  ): Promise<StoreResponseDto[]> {
+  ) {
+    // ): Promise<StoreResponseDto[]> {
     return this.likeService.findUserLikeStore(
       userId,
       userDto,
