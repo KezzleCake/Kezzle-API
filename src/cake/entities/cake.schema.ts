@@ -1,14 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
-import { ImageRequestDto } from '../../upload/dto/Image-request.dto';
+import { ImageResponseDto } from 'src/upload/dto/Image-response.dto';
 
 export type CakeDocument = Cake & Document;
 
 @Schema({ timestamps: true }) // timestamps: createdAt과 updatedAt을 자동으로 생성
 export class Cake {
-  @Prop({ type: ImageRequestDto, required: true })
-  image: ImageRequestDto;
+  @Prop({ type: ImageResponseDto, required: true })
+  image: ImageResponseDto;
 
   @Prop({ type: [{ type: String, ref: 'User', default: [] }] })
   user_like_ids: string[];
@@ -18,5 +17,5 @@ export class Cake {
 }
 
 const schema = SchemaFactory.createForClass(Cake);
-schema.plugin(mongoosePaginate.default);
+// schema.plugin(mongoosePaginate.default);
 export const CakeSchema = schema;

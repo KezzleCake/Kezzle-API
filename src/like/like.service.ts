@@ -42,7 +42,8 @@ export class LikeService {
     Iuser: IUser,
     latitude: number,
     longitude: number,
-  ): Promise<StoreResponseDto[]> {
+  ) {
+    // ): Promise<StoreResponseDto[]> {
     const user = await this.userModel
       .findOne({
         firebaseUid: userid,
@@ -69,12 +70,12 @@ export class LikeService {
       },
     ]);
 
-    return Promise.all(
-      stores.map(async (store) => {
-        const cakes = await this.cakeService.findCake(store._id, Iuser);
-        return new StoreResponseDto(store, user.firebaseUid, cakes);
-      }),
-    );
+    // return Promise.all(
+    //   stores.map(async (store) => {
+    //     const cakes = await this.cakeService.findCake(store._id, Iuser);
+    //     return new StoreResponseDto(store, user.firebaseUid, cakes);
+    //   }),
+    // );
   }
 
   async cakeAddLikeList(cakeid: string, user: IUser): Promise<boolean> {

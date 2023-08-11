@@ -1,4 +1,4 @@
-import { ImageRequestDto } from '../../upload/dto/Image-request.dto';
+import { Image } from '../../upload/entities/image.Schema';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DetailStoreResponseDto {
@@ -14,11 +14,11 @@ export class DetailStoreResponseDto {
   readonly name: string;
 
   @ApiProperty({
-    type: ImageRequestDto,
+    type: Image,
     description: '케이크 매장 로고 사진',
     required: false,
   })
-  readonly logo: ImageRequestDto;
+  readonly logo: Image;
 
   @ApiProperty({
     description: '케이크 매장 주소',
@@ -60,11 +60,11 @@ export class DetailStoreResponseDto {
   readonly phone_number: string;
 
   @ApiProperty({
-    type: ImageRequestDto,
+    type: Image,
     description: '케이크 매장 소개 사진들',
     required: false,
   })
-  readonly detail_images: ImageRequestDto[];
+  readonly detail_images: Image[];
 
   @ApiProperty({
     description: '케이크 매장 오픈 시간 ',

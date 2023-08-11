@@ -9,6 +9,7 @@ import { LikeModule } from './like/like.module';
 import { StoreModule } from './store/store.module';
 // import { CustomExceptionFilter } from './config/custom-exception.filter';
 import { UploadModule } from './upload/upload.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { UploadModule } from './upload/upload.module';
     StoreModule,
     UploadModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     // {
     //   provide: APP_FILTER,
