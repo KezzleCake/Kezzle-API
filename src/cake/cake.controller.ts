@@ -9,6 +9,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -30,7 +31,7 @@ import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeResponseDto } from './dto/response-cake.dto';
 import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { CakesResponseDto } from './dto/response-cakes.dto';
 
 const cakeIdParams = {
@@ -131,7 +132,7 @@ export class CakeController {
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
   @Post('stores/:id/cakes')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('file', 956))
   @ApiOperation({
     summary: '특정 매장의 케이크 생성',
     description:
@@ -147,9 +148,9 @@ export class CakeController {
   createCake(
     @Param('id') storeId: string,
     @GetUser() userDto: IUser,
-    @UploadedFile() file,
-  ): Promise<CakeCreateResponseDto> {
-    return this.cakeService.createCake(storeId, userDto, file);
+    @UploadedFiles() files,
+  ) {
+    return this.cakeService.createCake(storeId, userDto, files);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)

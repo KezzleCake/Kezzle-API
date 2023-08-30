@@ -9,6 +9,9 @@ export class Cake {
   @Prop({ type: ImageResponseDto, required: true })
   image: ImageResponseDto;
 
+  @Prop({ type: String })
+  cursor: string;
+
   @Prop({ type: [{ type: String, ref: 'User', default: [] }] })
   user_like_ids: string[];
 

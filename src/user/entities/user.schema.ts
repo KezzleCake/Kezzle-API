@@ -18,7 +18,7 @@ export class User {
   @Prop({
     type: [String],
     enum: [Roles.ADMIN, Roles.BUYER, Roles.SELLER],
-    default: [Roles.BUYER, Roles.ADMIN],
+    default: [Roles.BUYER],
   })
   roles: Roles[];
 

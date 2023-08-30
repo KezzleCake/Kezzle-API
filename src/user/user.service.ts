@@ -75,6 +75,7 @@ export class UserService {
     );
   }
 
+  //TODO: 회원 탈퇴될때 케이크&스토어 userlikeids에서 유저 정보 삭제
   async removeContent(userid: string) {
     await this.userModel
       .findOne({
@@ -83,6 +84,7 @@ export class UserService {
       .catch(() => {
         throw new UserNotFoundException(userid);
       });
+
     return await this.userModel.deleteOne({ firebaseUid: userid });
   }
 }

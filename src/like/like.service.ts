@@ -42,8 +42,7 @@ export class LikeService {
     Iuser: IUser,
     latitude: number,
     longitude: number,
-  ) {
-    // ): Promise<StoreResponseDto[]> {
+  ): Promise<StoreResponseDto[]> {
     const user = await this.userModel
       .findOne({
         firebaseUid: userid,
