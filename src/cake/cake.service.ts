@@ -11,8 +11,8 @@ import { CakeNotFoundException } from './exceptions/cake-not-found.exception';
 import { StoreNotFoundException } from 'src/store/exceptions/store-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
 import { Roles } from 'src/user/entities/roles.enum';
-import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
 import { UploadService } from 'src/upload/upload.service';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class CakeService {
@@ -24,31 +24,53 @@ export class CakeService {
 
   async findAll(user: IUser, after, limit: number): Promise<CakesResponseDto> {
     let cakes;
+    limit = 5;
     if (after === undefined) {
       cakes = await this.cakeModel
         .find()
-        .sort({ createdAt: -1 })
+        .sort({ cursor: 1 })
         .limit(limit + 1);
     } else {
       cakes = await this.cakeModel
         .find({
-          _id: { $lt: after },
+          cursor: { $gt: after },
         })
-        .sort({ createdAt: -1 })
-        .limit(limit + 1);
+        .sort({ cursor: 1 })
+        .limit(limit)
+        .exec();
     }
     let hasMore = false;
-
     if (cakes.length > limit) {
       hasMore = true;
       cakes = cakes.slice(0, cakes.length - 1);
     }
-
     const cakeResponse = await cakes.map(
       (cake) => new CakeResponseDto(cake, user.firebaseUid),
     );
     return new CakesResponseDto(cakeResponse, hasMore);
   }
+  // async findAll(user: IUser, after, limit: number): Promise<CakesResponseDto> {
+  //   let cakes;
+  //   if (after === undefined) {
+  //     cakes = await this.cakeModel.find().limit(limit + 1);
+  //   } else {
+  //     cakes = await this.cakeModel
+  //       .find({
+  //         _id: { $gt: after },
+  //       })
+  //       .limit(limit + 1);
+  //   }
+  //   let hasMore = false;
+  //   if (cakes.length > limit) {
+  //     hasMore = true;
+  //     cakes = cakes.slice(0, cakes.length - 1);
+  //   }
+  //   const cakeResponse = await cakes.map(
+  //     (cake) => new CakeResponseDto(cake, user.firebaseUid),
+  //   );
+  //   return new CakesResponseDto(cakeResponse, hasMore);
+  // }
+
   async findOne(cakeid: string, user: IUser): Promise<CakeResponseDto> {
     const cake = await this.cakeModel.findById(cakeid).catch(() => {
       throw new CakeNotFoundException(cakeid);
@@ -73,10 +95,12 @@ export class CakeService {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
 
-    await this.uploadService.remove('cake', cake.image.s3Url);
+    const path = store.name + '/cakes';
+
+    await this.uploadService.remove(path, cake.image.s3Url);
 
     const updatedata = new UpdateCakeDto(
-      await this.uploadService.create('cake', file),
+      await this.uploadService.create(path, file),
     );
     return await this.cakeModel.updateOne(
       {
@@ -103,10 +127,16 @@ export class CakeService {
     ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
+
+    const path = store.name + '/cakes';
+
+    await this.uploadService.remove(path, cake.image.s3Url);
+
     return await this.cakeModel.deleteOne({ _id: cakeid });
   }
 
-  async createCake(storeid, user: IUser, file): Promise<CakeCreateResponseDto> {
+  async createCake(storeid, user: IUser, files) {
+    //: Promise<CakeCreateResponseDto> {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
@@ -117,16 +147,30 @@ export class CakeService {
     ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
-    //TODO: 이거 나중에 확인해야함
-
     const path = store.name + '/cakes';
-    const image = await this.uploadService.create('path', file);
 
-    const cake = await this.cakeModel.create({
-      image: image,
-      owner_store_id: storeid,
-    });
-    return new CakeCreateResponseDto(cake);
+    const objectId = new ObjectId();
+    const timestamp = objectId.getTimestamp();
+    const timeValue = timestamp.getTime().toString().padStart(15, '0');
+
+    let cnt = 0;
+    for (const file of files) {
+      const image = await this.uploadService.create(path, file);
+
+      const randomNum = Math.floor(Math.random() * 10000);
+      const cursorValue = String(randomNum).padStart(6, '0') + timeValue;
+
+      await this.cakeModel.create({
+        image: image,
+        owner_store_id: storeid,
+        cursor: cursorValue,
+      });
+      cnt++;
+
+      if (cnt % 10 == 0) console.log(cnt + '개의 파일 업로드 성공');
+    }
+    console.log(cnt + '개의 파일 업로드 성공');
+    return cnt + '개의 파일 업로드 성공';
   }
 
   async findCake(
@@ -139,21 +183,22 @@ export class CakeService {
       throw new StoreNotFoundException(storeid);
     });
 
+    if (Number.isNaN(limit)) {
+      limit = 20;
+    }
     let cakes;
     if (after === undefined) {
       cakes = await this.cakeModel
         .find({
           owner_store_id: storeid,
         })
-        .sort({ createdAt: -1 })
         .limit(limit + 1);
     } else {
       cakes = await this.cakeModel
         .find({
-          _id: { $lt: after },
+          _id: { $gt: after },
           owner_store_id: storeid,
         })
-        .sort({ createdAt: -1 })
         .limit(limit + 1);
     }
 

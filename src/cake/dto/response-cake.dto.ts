@@ -21,10 +21,18 @@ export class CakeResponseDto {
   })
   readonly isLiked: boolean;
 
+  @ApiProperty({
+    type: Boolean,
+    description: 'cursor',
+    example: true,
+  })
+  readonly cursor: string;
+
   constructor(data: any, userid: string) {
     this._id = data?._id;
     this.image = data?.image;
     this.owner_store_id = data?.owner_store_id;
     this.isLiked = data?.user_like_ids.includes(userid);
+    this.cursor = data?.cursor;
   }
 }

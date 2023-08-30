@@ -73,7 +73,7 @@ export class StoreController {
     );
   }
 
-  @RolesAllowed(Roles.SELLER, Roles.ADMIN)
+  @RolesAllowed(Roles.ADMIN)
   @Post()
   @ApiOperation({
     summary: '매장 생성',
