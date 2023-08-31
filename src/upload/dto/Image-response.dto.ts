@@ -21,7 +21,7 @@ export class ImageResponseDto {
     description: 'Object key',
     example: 'test/41f1904d-cb2e-45f3-b5ee-072bc49cba11.png',
   })
-  readonly converte_name: string;
+  readonly key: string;
 
   @IsString()
   @ApiProperty({
