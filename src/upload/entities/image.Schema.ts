@@ -9,6 +9,9 @@ export class Image {
   converte_name: string;
 
   @Prop({ type: String, required: true })
+  key: string;
+
+  @Prop({ type: String, required: true })
   s3Url: string;
 }
 

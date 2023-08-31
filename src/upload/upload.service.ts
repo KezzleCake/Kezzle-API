@@ -28,6 +28,7 @@ export class UploadService {
     return new ImageResponseDto({
       name: file.originalname,
       converted_name: convertedName,
+      key: `${parentDirectory}/${convertedName}`,
       s3Url: data.Location,
     });
   }
