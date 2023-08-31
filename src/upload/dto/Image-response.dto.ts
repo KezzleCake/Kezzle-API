@@ -15,6 +15,13 @@ export class ImageResponseDto {
     example: '41f1904d-cb2e-45f3-b5ee-072bc49cba11.png',
   })
   readonly converte_name: string;
+  
+  @IsString()
+  @ApiProperty({
+    description: 'Object key',
+    example: 'test/41f1904d-cb2e-45f3-b5ee-072bc49cba11.png',
+  })
+  readonly converte_name: string;
 
   @IsString()
   @ApiProperty({
@@ -27,6 +34,7 @@ export class ImageResponseDto {
   constructor(data) {
     this.name = data.name;
     this.converte_name = data.converte_name;
+    this.key = data.key;
     this.s3Url = data.s3Url;
   }
 }
