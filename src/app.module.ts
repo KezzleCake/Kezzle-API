@@ -5,7 +5,7 @@ import { UserModule } from './user/user.module';
 import { APP_PIPE } from '@nestjs/core';
 import { CakeModule } from './cake/cake.module';
 import { AuthModule } from './auth/auth.module';
-import { LikeModule } from './like/like.module';
+// import { LikeModule } from './like/like.module';
 import { StoreModule } from './store/store.module';
 import { UploadModule } from './upload/upload.module';
 
@@ -22,7 +22,7 @@ import { UploadModule } from './upload/upload.module';
     UserModule,
     CakeModule,
     AuthModule,
-    LikeModule,
+    // LikeModule,
     StoreModule,
     UploadModule,
   ],

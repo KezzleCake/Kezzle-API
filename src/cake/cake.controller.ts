@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
+  Body,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -31,8 +32,14 @@ import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeResponseDto } from './dto/response-cake.dto';
 import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { CakesResponseDto } from './dto/response-cakes.dto';
+import { CreateCakeDto } from './dto/create-cake.dto';
+import * as XLSX from 'xlsx';
 
 const cakeIdParams = {
   name: 'id',
@@ -64,6 +71,12 @@ export class CakeController {
     @Query('count') limit,
   ): Promise<CakesResponseDto> {
     return await this.cakeService.findAll(userDto, after, parseInt(limit));
+  }
+
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/show')
+  cakeCuration(@Query('keyword') keyword: string[], @GetUser() userDto: IUser) {
+    return this.cakeService.curation(keyword, userDto);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
@@ -132,7 +145,12 @@ export class CakeController {
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
   @Post('stores/:id/cakes')
-  @UseInterceptors(FilesInterceptor('file', 956))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'image', maxCount: 956 },
+      { name: 'excel', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({
     summary: '특정 매장의 케이크 생성',
     description:

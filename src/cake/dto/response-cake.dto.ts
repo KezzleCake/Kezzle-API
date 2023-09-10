@@ -28,11 +28,35 @@ export class CakeResponseDto {
   })
   readonly cursor: string;
 
+  @ApiProperty({
+    type: Boolean,
+    description: 'like_ins',
+    example: true,
+  })
+  readonly like_ins: string;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'tag_ins',
+    example: true,
+  })
+  readonly tag_ins: string;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'content_ins',
+    example: true,
+  })
+  readonly content_ins: string;
+
   constructor(data: any, userid: string) {
     this._id = data?._id;
     this.image = data?.image;
     this.owner_store_id = data?.owner_store_id;
     this.isLiked = data?.user_like_ids.includes(userid);
     this.cursor = data?.cursor;
+    this.like_ins = data?.likeins;
+    this.tag_ins = data?.tag_ins;
+    this.content_ins = data?.content_ins;
   }
 }

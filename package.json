@@ -34,6 +34,7 @@
     "@vendia/serverless-express": "^4.10.4",
     "aws-lambda": "^1.0.7",
     "aws-sdk": "^2.1431.0",
+    "axios": "^1.5.0",
     "cake": "^0.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -41,6 +42,7 @@
     "dotenv": "^16.3.1",
     "firebase-admin": "^11.10.1",
     "firebase-functions": "^4.4.1",
+    "fs": "^0.0.1-security",
     "g": "^2.0.1",
     "jose": "^4.14.4",
     "mo": "^1.7.3",
@@ -55,7 +57,8 @@
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.17",
-    "users": "^2.0.0"
+    "users": "^2.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
