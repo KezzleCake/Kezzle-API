@@ -2,11 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ImageResponseDto } from 'src/upload/dto/Image-response.dto';
 
-export type CakeDocument = NCake & Document;
+export type CakeDocument = Cake & Document;
 
 //TODO: 수정해야함
 @Schema({ timestamps: true }) // timestamps: createdAt과 updatedAt을 자동으로 생성
-export class NCake {
+export class Cake {
   @Prop({ type: ImageResponseDto }) //, required: true })
   image: ImageResponseDto;
 
@@ -29,5 +29,5 @@ export class NCake {
   content_ins: string;
 }
 
-const schema = SchemaFactory.createForClass(NCake);
+const schema = SchemaFactory.createForClass(Cake);
 export const CakeSchema = schema;

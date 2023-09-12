@@ -3,7 +3,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
-import { NCake } from './entities/cake.schema';
+import { Cake } from './entities/cake.schema';
 import { UpdateCakeDto } from './dto/update-cake.dto';
 import { CakeResponseDto } from './dto/response-cake.dto';
 import IUser from 'src/user/interfaces/user.interface';
@@ -21,7 +21,7 @@ import { CakesCurationDto } from './dto/response-curation-cakes.dto';
 @Injectable()
 export class CakeService {
   constructor(
-    @InjectModel(NCake.name) private readonly cakeModel: Model<NCake>,
+    @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
     private readonly uploadService: UploadService,
     private readonly httpService: HttpService,
@@ -140,7 +140,7 @@ export class CakeService {
     ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
     }
-    const path = store.name + '/cakes';
+    const path = store.id + '/cakes';
     let cnt = 0;
     let i = 0;
     for (const img of files.image) {
@@ -242,26 +242,13 @@ export class CakeService {
     return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
   }
 
-  async curation(keywords: string[], user: IUser) {
+  async curation(keywords: string[], size: number, user: IUser) {
     const tmp_key_cake = [];
 
     for (const keyword of keywords) {
-      //TODO: 현수오빠가 api고치면 코드 바꾸기
-      // const apiUrl =
-      //   'https://api.kezzlecake.com/clip/cakes/ko-search?keyword=크리스마스 케이크&size=5'; // 외부 API의 엔드포인트 URL
-      // try {
-      //   const response = await this.httpService.get(apiUrl).toPromise();
-      //   const cakes = response.data.result;
-      //   console.log(cakes);
-      // } catch (error) {
-      //   // 오류 처리
-      //   throw new Error(
-      //     `Failed to fetch data from the external API: ${error.message}`,
-      //   );
-      // }
-
-      //임시로 케이크 검색 api 요청했다고 치고
-      const cakes = await this.cakeModel.find().limit(5);
+      const apiUrl = `https://api.kezzlecake.com/clip/cakes/ko-search?keyword=${keyword}&size=${size}`; // 외부 API의 엔드포인트 URL
+      const response = await this.httpService.get(apiUrl).toPromise();
+      const cakes = response.data.result;
 
       const sort_cakes = [];
       for (const cake of cakes) {
@@ -274,7 +261,28 @@ export class CakeService {
       }
       tmp_key_cake.push(new CakesCurationDto(sort_cakes, keyword));
     }
-
+    //TODO: DTO로 변환하기
     return tmp_key_cake;
+  }
+
+  async popular(user: IUser) {
+    const cakes = await this.cakeModel.find();
+
+    function customSort(doc1, doc2) {
+      const doc1ins =
+        parseInt(doc1.like_ins, 10) * 0.1 + doc1.user_like_ids.length * 0.9;
+      const doc2ins =
+        parseInt(doc2.like_ins, 10) * 0.1 + doc2.user_like_ids.length * 0.9;
+      if (doc2ins < doc1ins) return -1;
+      else if (doc2ins > doc1ins) return 1;
+      return 0;
+    }
+    cakes.sort(customSort);
+
+    //TODO:Top 20개 보내기
+    const cakeResponse = await cakes.map(
+      (cake) => new CakeResponseDto(cake, user.firebaseUid),
+    );
+    return new CakesResponseDto(cakeResponse, false);
   }
 }

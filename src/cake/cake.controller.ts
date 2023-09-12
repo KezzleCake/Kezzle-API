@@ -10,7 +10,6 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
-  Body,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -75,8 +74,18 @@ export class CakeController {
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
   @Get('cakes/show')
-  cakeCuration(@Query('keyword') keyword: string[], @GetUser() userDto: IUser) {
-    return this.cakeService.curation(keyword, userDto);
+  cakeCuration(
+    @Query('keyword') keyword: string[],
+    @Query('size') size: string,
+    @GetUser() userDto: IUser,
+  ) {
+    return this.cakeService.curation(keyword, parseInt(size), userDto);
+  }
+
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/popular')
+  cakePopular(@GetUser() userDto: IUser) {
+    return this.cakeService.popular(userDto);
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
