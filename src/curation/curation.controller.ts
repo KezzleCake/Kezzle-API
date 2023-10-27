@@ -15,11 +15,8 @@ export class CurationController {
   }
 
   @Get()
-  homeCuration(@Query('after') after: string, @Query('limit') limit: string) {
-    return this.curationService.homeCuration(
-      parseFloat(after),
-      parseInt(limit),
-    );
+  homeCuration() {
+    return this.curationService.homeCuration();
   }
 
   @Get(':id')

@@ -34,7 +34,7 @@ export class CurationService {
     });
   }
 
-  async homeCuration(after, limit: number) {
+  async homeCuration() {
     const ments = ['상황별 BEST', '받는 사람들을 위한 케이크'];
 
     const result: CurationsDto[] = [];
@@ -45,7 +45,7 @@ export class CurationService {
       result.push(new CurationsDto(Response, ment));
     }
     const ann = await this.anniversaryService.getAnniversary();
-    const pop = await this.cakeService.popular(after, limit);
+    const pop = await this.cakeService.popular(NaN, 10);
     return new HomeCurationDto(result, ann, pop);
   }
 
