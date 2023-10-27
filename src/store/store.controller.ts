@@ -19,6 +19,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { StoreService } from './store.service';
@@ -33,6 +34,7 @@ import IUser from 'src/user/interfaces/user.interface';
 import { StoreResponseDto } from './dto/response-store.dto';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { StoresResponseDto } from './dto/response-stores.dto';
 
 const storeIdParams = {
   name: 'id',
@@ -56,11 +58,47 @@ export class StoreController {
       '\n\n' +
       '권한이 필요하지 않습니다.',
   })
+  @ApiQuery({
+    name: 'latitude',
+    description: '위도',
+    required: true,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'longitude',
+    description: '경도',
+    required: true,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'dist',
+    description: '반경 제한(설정 안할 시 전체 검색, 미터 단위)',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'after',
+    description:
+      '거리를 기준으로 커서 기반 페이지네이션을 합니다.(없으면 첫번째 페이지)',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'count',
+    description: '요청할 매장 개수',
+    required: false,
+    type: Number,
+  })
   @ApiNoContentResponse({ description: '정보 없음.' })
+  @ApiOkResponse({
+    description: '매장 목록 요청 성공',
+    type: StoresResponseDto,
+  })
   getAll(
     @GetUser() userDto: IUser,
     @Query('latitude') latitude,
     @Query('longitude') longitude,
+    @Query('dist') distance,
     @Query('after') after,
     @Query('count') limit,
   ) {
@@ -68,6 +106,7 @@ export class StoreController {
       userDto,
       parseFloat(latitude),
       parseFloat(longitude),
+      parseInt(distance),
       parseFloat(after),
       parseInt(limit),
     );
@@ -109,15 +148,8 @@ export class StoreController {
   getOne(
     @Param('id') cakeId: string,
     @GetUser() userDto: IUser,
-    @Query('latitude') latitude,
-    @Query('longitude') longitude,
   ): Promise<DetailStoreResponseDto> {
-    return this.storeService.findOne(
-      cakeId,
-      userDto,
-      parseFloat(latitude),
-      parseFloat(longitude),
-    );
+    return this.storeService.findOne(cakeId, userDto);
   }
 
   @RolesAllowed(Roles.SELLER, Roles.ADMIN)

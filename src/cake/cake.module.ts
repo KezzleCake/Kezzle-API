@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Cake, CakeSchema } from './entities/cake.schema';
 import { CakeService } from './cake.service';
@@ -6,13 +6,25 @@ import { CakeController } from './cake.controller';
 import { Store, StoreSchema } from 'src/store/entities/store.schema';
 import { UploadModule } from '../upload/upload.module';
 import { HttpModule } from '@nestjs/axios';
+import { StoreModule } from 'src/store/store.module';
+import { LogModule } from 'src/log/log.module';
+import { AnniversaryModule } from 'src/anniversary/anniversary.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Cake.name, schema: CakeSchema }]),
-    MongooseModule.forFeature([{ name: Store.name, schema: StoreSchema }]),
+    MongooseModule.forFeature(
+      [{ name: Cake.name, schema: CakeSchema }],
+      'kezzle',
+    ),
+    MongooseModule.forFeature(
+      [{ name: Store.name, schema: StoreSchema }],
+      'kezzle',
+    ),
     UploadModule,
     HttpModule,
+    forwardRef(() => StoreModule),
+    LogModule,
+    AnniversaryModule,
   ],
   controllers: [CakeController],
   providers: [CakeService],

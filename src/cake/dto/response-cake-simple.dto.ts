@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Image } from '../../upload/entities/image.Schema';
 
-export class CakeResponseDto {
+export class CakeSimpleResponseDto {
   @ApiProperty({
     description: '케이크 ID(ObjectId)',
     example: '60b4d1b3e6b0b3001b9b9b9b',
@@ -16,31 +16,18 @@ export class CakeResponseDto {
 
   @ApiProperty({
     type: Boolean,
-    description: '로그인한 유저가 좋아요 눌렀는지',
-    example: true,
-  })
-  readonly isLiked: boolean;
-
-  @ApiProperty({
-    type: Boolean,
-    description: 'cursor',
-    example: true,
-  })
-  readonly cursor: string;
-
-  @ApiProperty({
-    type: Boolean,
     description: 'hashtag',
     example: true,
   })
   readonly hashtag: string[];
 
-  constructor(data: any, userid: string) {
+  readonly popular_cal: number;
+
+  constructor(data: any) {
     this._id = data?._id;
     this.image = data?.image;
     this.owner_store_id = data?.owner_store_id;
-    this.isLiked = data?.user_like_ids.includes(userid);
-    this.cursor = data?.cursor;
     this.hashtag = data?.tag_ins;
+    this.popular_cal = data?.total;
   }
 }

@@ -10,6 +10,7 @@ export class StoresResponseDto {
   readonly hasMore: boolean;
 
   @ApiProperty({
+    type: [StoreResponseDto],
     description: '스토어들',
   })
   readonly stores: StoreResponseDto[];

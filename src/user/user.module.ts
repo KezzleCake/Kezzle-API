@@ -6,7 +6,10 @@ import { User, UserSchema } from './entities/user.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature(
+      [{ name: User.name, schema: UserSchema }],
+      'kezzle',
+    ),
   ],
   controllers: [UserController],
   providers: [UserService],

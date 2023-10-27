@@ -14,13 +14,13 @@ import {
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
-  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { CakeService } from './cake.service';
 import { FirebaseAuthGuard } from 'src/auth/guard/firebase-auth.guard';
@@ -30,15 +30,11 @@ import { RolesAllowed } from 'src/auth/decorators/roles.decorator';
 import { GetUser } from 'src/user/decorators/get-user.decorator';
 import IUser from 'src/user/interfaces/user.interface';
 import { CakeResponseDto } from './dto/response-cake.dto';
-import { CakeCreateResponseDto } from './dto/responese-create-cake.dto';
 import {
   FileFieldsInterceptor,
   FileInterceptor,
-  FilesInterceptor,
 } from '@nestjs/platform-express';
 import { CakesResponseDto } from './dto/response-cakes.dto';
-import { CreateCakeDto } from './dto/create-cake.dto';
-import * as XLSX from 'xlsx';
 
 const cakeIdParams = {
   name: 'id',
@@ -54,38 +50,147 @@ const cakeIdParams = {
 export class CakeController {
   constructor(private readonly cakeService: CakeService) {}
 
+  // @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  // @Get('cakes')
+  // @ApiOperation({
+  //   summary: '케이크 전체 목록 요청',
+  //   description:
+  //     '페이지네이션된 케이크 목록을 요청합니다.' +
+  //     '\n\n' +
+  //     '권한이 필요하지 않습니다.',
+  // })
+  // @ApiNoContentResponse({ description: '정보 없음.' })
+  // async getAll(
+  //   @GetUser() userDto: IUser,
+  //   @Query('after') after,
+  //   @Query('count') limit,
+  // ): Promise<CakesResponseDto> {
+  //   return await this.cakeService.findAll(userDto, after, parseInt(limit));
+  // }
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
   @Get('cakes')
-  @ApiOperation({
-    summary: '케이크 전체 목록 요청',
-    description:
-      '페이지네이션된 케이크 목록을 요청합니다.' +
-      '\n\n' +
-      '권한이 필요하지 않습니다.',
+  @ApiQuery({
+    name: 'latitude',
+    description: '위도',
+    required: true,
+    type: Number,
   })
-  @ApiNoContentResponse({ description: '정보 없음.' })
+  @ApiQuery({
+    name: 'longitude',
+    description: '경도',
+    required: true,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'dist',
+    description: '반경 제한(설정 안할 시 전체 검색, 미터 단위)',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'after',
+    description:
+      'Cursor를 기준으로 커서 기반 페이지네이션을 합니다.(없으면 첫번째 페이지)',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'count',
+    description: '요청할 케이크 개수',
+    required: false,
+    type: Number,
+  })
+  @ApiOkResponse({
+    description: '케이크 목록 요청 성공',
+    type: CakesResponseDto,
+  })
   async getAll(
     @GetUser() userDto: IUser,
+    @Query('latitude') lat,
+    @Query('longitude') lon,
+    @Query('dist') dist,
     @Query('after') after,
     @Query('count') limit,
   ): Promise<CakesResponseDto> {
-    return await this.cakeService.findAll(userDto, after, parseInt(limit));
+    return await this.cakeService.findAll(
+      userDto,
+      parseFloat(lat),
+      parseFloat(lon),
+      parseInt(dist),
+      after,
+      parseInt(limit),
+    );
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
-  @Get('cakes/show')
-  cakeCuration(
-    @Query('keyword') keyword: string[],
-    @Query('size') size: string,
+  @Get('cakes/location')
+  @ApiQuery({
+    name: 'latitude',
+    description: '위도',
+    required: true,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'longitude',
+    description: '경도',
+    required: true,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'dist',
+    description: '반경 제한(설정 안할 시 전체 검색, 미터 단위)',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'after',
+    description:
+      'ID를 기준으로 커서 기반 페이지네이션을 합니다.(없으면 첫번째 페이지)',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'count',
+    description: '요청할 케이크 개수',
+    required: false,
+    type: Number,
+  })
+  @ApiOkResponse({
+    description: '케이크 목록 요청 성공',
+    type: CakesResponseDto,
+  })
+  async getAllByLocation(
     @GetUser() userDto: IUser,
-  ) {
-    return this.cakeService.curation(keyword, parseInt(size), userDto);
+    @Query('latitude') lat,
+    @Query('longitude') lon,
+    @Query('dist') dist,
+    @Query('after') after,
+    @Query('count') limit,
+  ): Promise<CakesResponseDto> {
+    return await this.cakeService.findAllByLocation(
+      userDto,
+      parseFloat(lat),
+      parseFloat(lon),
+      parseInt(dist),
+      after,
+      parseInt(limit),
+    );
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
   @Get('cakes/popular')
-  cakePopular(@GetUser() userDto: IUser) {
-    return this.cakeService.popular(userDto);
+  cakePopular(@Query('after') after: string, @Query('limit') limit: string) {
+    return this.cakeService.popular(parseFloat(after), parseInt(limit));
+  }
+
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/anniversary/:id')
+  cakeAnniversary(
+    @Param('id') anni: string,
+    @GetUser() userDto: IUser,
+    @Query('page') page: string,
+  ) {
+    return this.cakeService.anniversary(anni, userDto, parseInt(page));
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
@@ -152,11 +257,31 @@ export class CakeController {
     return this.cakeService.removeContent(cakeId, userDto);
   }
 
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/:id/similar')
+  cakeSimilar(
+    @GetUser() userDto: IUser,
+    @Param('id') cakeId: string,
+    @Query('latitude') lat,
+    @Query('longitude') lon,
+    @Query('dist') dist,
+    @Query('size') size,
+  ) {
+    return this.cakeService.similar(
+      cakeId,
+      parseFloat(lon),
+      parseFloat(lat),
+      parseInt(dist),
+      parseInt(size),
+      userDto,
+    );
+  }
+
   @RolesAllowed(Roles.ADMIN, Roles.SELLER)
   @Post('stores/:id/cakes')
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'image', maxCount: 956 },
+      { name: 'image', maxCount: 3000 },
       { name: 'excel', maxCount: 1 },
     ]),
   )

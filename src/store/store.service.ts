@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,7 +7,6 @@ import { Model, PipelineStage } from 'mongoose';
 import { DetailStoreResponseDto } from './dto/response-detail-store.dto';
 import { StoreResponseDto } from './dto/response-store.dto';
 import IUser from 'src/user/interfaces/user.interface';
-import { CakeService } from 'src/cake/cake.service';
 import { StoreNotFoundException } from './exceptions/store-not-found.exception';
 import { StoresNotFoundException } from './exceptions/stores-not-found.exception';
 import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.exception';
@@ -17,12 +16,15 @@ import { UpdateStoreLogoDto } from './dto/update-store-logo.dto';
 import { S3 } from 'aws-sdk';
 import { StoresResponseDto } from './dto/response-stores.dto';
 import { UpdateStoreImageDto } from './dto/update-store-image.dto';
+import { CakeService } from 'src/cake/cake.service';
 
 @Injectable()
 export class StoreService {
   private s3 = new S3();
   constructor(
-    @InjectModel(Store.name) private readonly storeModel: Model<Store>,
+    @InjectModel(Store.name, 'kezzle')
+    private readonly storeModel: Model<Store>,
+    @Inject(forwardRef(() => CakeService))
     private readonly cakeService: CakeService,
     private readonly uploadService: UploadService,
   ) {}
@@ -31,7 +33,8 @@ export class StoreService {
     user: IUser,
     latitude: number,
     longitude: number,
-    after,
+    distance: number,
+    after: number,
     limit: number,
   ) {
     let stores;
@@ -43,6 +46,10 @@ export class StoreService {
         spherical: true,
       },
     };
+
+    if (!Number.isNaN(distance)) {
+      geoNear.$geoNear.maxDistance = distance;
+    }
 
     const match: PipelineStage.Match = {
       $match: {
@@ -85,35 +92,11 @@ export class StoreService {
     return await createdStore.save();
   }
 
-  async findOne(
-    storeid: string,
-    user: IUser,
-    latitude: number,
-    longitude: number,
-  ): Promise<DetailStoreResponseDto> {
+  async findOne(storeid: string, user: IUser): Promise<DetailStoreResponseDto> {
     const store = await this.storeModel.findById(storeid).catch(() => {
       throw new StoreNotFoundException(storeid);
     });
-
-    const storeone = await this.storeModel.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: 'Point',
-            coordinates: [longitude, latitude],
-          },
-          spherical: true,
-          distanceField: 'distance',
-        },
-      },
-      {
-        $match: {
-          _id: store._id,
-        },
-      },
-    ]);
-
-    return new DetailStoreResponseDto(storeone[0], user.firebaseUid);
+    return new DetailStoreResponseDto(store, user.firebaseUid);
   }
 
   async changeContent(

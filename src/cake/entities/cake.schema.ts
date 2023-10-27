@@ -4,10 +4,9 @@ import { ImageResponseDto } from 'src/upload/dto/Image-response.dto';
 
 export type CakeDocument = Cake & Document;
 
-//TODO: 수정해야함
 @Schema({ timestamps: true }) // timestamps: createdAt과 updatedAt을 자동으로 생성
 export class Cake {
-  @Prop({ type: ImageResponseDto }) //, required: true })
+  @Prop({ type: ImageResponseDto, required: true })
   image: ImageResponseDto;
 
   @Prop({ type: String })
@@ -27,6 +26,9 @@ export class Cake {
 
   @Prop({ type: String })
   content_ins: string;
+
+  @Prop({ type: Number })
+  cal_likes: number;
 }
 
 const schema = SchemaFactory.createForClass(Cake);

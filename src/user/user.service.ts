@@ -12,7 +12,9 @@ import { UserAlredyJoinedException } from './exceptions/user-already-joined.exce
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name, 'kezzle') private userModel: Model<User>,
+  ) {}
 
   async create(token: string, createUserDto: CreateUserDto): Promise<User> {
     token = token.replace('Bearer ', '');

@@ -1,6 +1,7 @@
+import { StoreService } from './../store/store.service';
 import { CakesResponseDto } from './dto/response-cakes.dto';
-import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { Model, PipelineStage } from 'mongoose';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cake } from './entities/cake.schema';
@@ -14,44 +15,206 @@ import { UserNotOwnerException } from 'src/user/exceptions/user-not-owner.except
 import { Roles } from 'src/user/entities/roles.enum';
 import { UploadService } from 'src/upload/upload.service';
 import { ObjectId } from 'mongodb';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx'; // TODO:나중에 이거 바꿔야함
 import ICake from './interface/cake.interface';
-import { CakesCurationDto } from './dto/response-curation-cakes.dto';
+import { StoreSimpleResponseDto } from 'src/store/dto/response-simple-store.dto';
+import { CakeSimilarResponseDto } from './dto/response-similar-cake.dto';
+import { LogService } from 'src/log/log.service';
+import { PopularCakesResponseDto } from './dto/response-popular-cakes.dto';
+import { AnniversaryService } from 'src/anniversary/anniversary.service';
+import { CakeSimpleResponseDto } from './dto/response-cake-simple.dto';
 
 @Injectable()
 export class CakeService {
   constructor(
-    @InjectModel(Cake.name) private readonly cakeModel: Model<Cake>,
-    @InjectModel(Store.name) private readonly storeModel: Model<Store>,
+    @InjectModel(Cake.name, 'kezzle') private readonly cakeModel: Model<Cake>,
+    @InjectModel(Store.name, 'kezzle')
+    private readonly storeModel: Model<Store>,
     private readonly uploadService: UploadService,
+    @Inject(forwardRef(() => StoreService))
+    private readonly storeService: StoreService,
     private readonly httpService: HttpService,
+    private readonly logService: LogService,
+    private readonly anniversaryService: AnniversaryService,
   ) {}
 
-  async findAll(user: IUser, after, limit: number): Promise<CakesResponseDto> {
+  // async findAll(user: IUser, after, limit: number): Promise<CakesResponseDto> {
+  //   let cakes;
+  //   limit = 5;
+  //   if (after === undefined) {
+  //     cakes = await this.cakeModel
+  //       .find()
+  //       .sort({ cursor: 1 })
+  //       .limit(limit + 1);
+  //   } else {
+  //     cakes = await this.cakeModel
+  //       .find({
+  //         cursor: { $gt: after },
+  //       })
+  //       .sort({ cursor: 1 })
+  //       .limit(limit + 1)
+  //       .exec();
+  //   }
+  //   let hasMore = false;
+  //   if (cakes.length > limit) {
+  //     hasMore = true;
+  //     cakes = cakes.slice(0, cakes.length - 1);
+  //   }
+  //   const cakeResponse = await cakes.map(
+  //     (cake) => new CakeResponseDto(cake, user.firebaseUid),
+  //   );
+  //   return new CakesResponseDto(cakeResponse, hasMore);
+  // }
+  async findAll(
+    user: IUser,
+    latitude: number,
+    longitude: number,
+    distance: number,
+    after: string,
+    limit: number,
+  ): Promise<CakesResponseDto> {
     let cakes;
-    limit = 5;
-    if (after === undefined) {
-      cakes = await this.cakeModel
-        .find()
-        .sort({ cursor: 1 })
-        .limit(limit + 1);
-    } else {
-      cakes = await this.cakeModel
-        .find({
-          cursor: { $gt: after },
-        })
-        .sort({ cursor: 1 })
-        .limit(limit + 1)
-        .exec();
+
+    const geoNear: PipelineStage.GeoNear = {
+      $geoNear: {
+        near: { type: 'Point', coordinates: [longitude, latitude] },
+        distanceField: 'dist',
+        spherical: true,
+      },
+    };
+
+    if (!Number.isNaN(distance)) {
+      geoNear.$geoNear.maxDistance = distance;
     }
+
+    let storeIdsInLocation = await this.storeModel.aggregate([
+      geoNear,
+      {
+        $project: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    storeIdsInLocation = storeIdsInLocation.map((store) =>
+      store._id.toString(),
+    );
+
+    let match: PipelineStage.Match;
+    if (after === undefined || after.trim() === '') {
+      match = {
+        $match: {
+          owner_store_id: {
+            $in: storeIdsInLocation,
+          },
+        },
+      };
+    } else {
+      match = {
+        $match: {
+          owner_store_id: {
+            $in: storeIdsInLocation,
+          },
+          cursor: {
+            $gt: after,
+          },
+        },
+      };
+    }
+
+    cakes = await this.cakeModel
+      .aggregate([
+        {
+          $sort: {
+            cursor: 1,
+          },
+        },
+        match,
+      ])
+      .limit(limit + 1);
     let hasMore = false;
+
     if (cakes.length > limit) {
       hasMore = true;
       cakes = cakes.slice(0, cakes.length - 1);
     }
-    const cakeResponse = await cakes.map(
+
+    const cakeResponse = cakes.map(
       (cake) => new CakeResponseDto(cake, user.firebaseUid),
     );
+
+    return new CakesResponseDto(cakeResponse, hasMore);
+  }
+
+  async findAllByLocation(
+    user: IUser,
+    latitude: number,
+    longitude: number,
+    distance: number,
+    after: string,
+    limit: number,
+  ): Promise<CakesResponseDto> {
+    let cakes;
+
+    const geoNear: PipelineStage.GeoNear = {
+      $geoNear: {
+        near: { type: 'Point', coordinates: [longitude, latitude] },
+        distanceField: 'dist',
+        spherical: true,
+      },
+    };
+
+    if (!Number.isNaN(distance)) {
+      geoNear.$geoNear.maxDistance = distance;
+    }
+
+    let storeIdsInLocation = await this.storeModel.aggregate([
+      geoNear,
+      {
+        $project: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    storeIdsInLocation = storeIdsInLocation.map((store) =>
+      store._id.toString(),
+    );
+
+    let match: PipelineStage.Match;
+    if (after === undefined || after.trim() === '') {
+      match = {
+        $match: {
+          owner_store_id: {
+            $in: storeIdsInLocation,
+          },
+        },
+      };
+    } else {
+      match = {
+        $match: {
+          owner_store_id: {
+            $in: storeIdsInLocation,
+          },
+          _id: {
+            $gt: new ObjectId(after),
+          },
+        },
+      };
+    }
+
+    cakes = await this.cakeModel.aggregate([match]).limit(limit + 1);
+    let hasMore = false;
+
+    if (cakes.length > limit) {
+      hasMore = true;
+      cakes = cakes.slice(0, cakes.length - 1);
+    }
+
+    const cakeResponse = cakes.map(
+      (cake) => new CakeResponseDto(cake, user.firebaseUid),
+    );
+
     return new CakesResponseDto(cakeResponse, hasMore);
   }
 
@@ -142,7 +305,6 @@ export class CakeService {
     }
     const path = store.id + '/cakes';
     let cnt = 0;
-    let i = 0;
     for (const img of files.image) {
       const image = await this.uploadService.create(path, img);
       const objectId = new ObjectId();
@@ -152,9 +314,12 @@ export class CakeService {
       const cursorValue = String(randomNum).padStart(6, '0') + timeValue;
 
       let content;
-      if (rows.length > i && img.originalname === rows[i].img) {
-        content = rows[i];
-        i++;
+
+      for (let i = 0; i < rows.length; i++) {
+        if (img.originalname === rows[i].img) {
+          content = rows[i];
+          break;
+        }
       }
 
       if (content !== undefined) {
@@ -242,44 +407,53 @@ export class CakeService {
     return cakes.map((cake) => new CakeResponseDto(cake, user.firebaseUid));
   }
 
-  async curation(keywords: string[], size: number, user: IUser) {
-    const tmp_key_cake = [];
+  async popular(after, limit: number) {
+    const sDate = '2023-01-01';
+    const eDate = '2023-12-31';
+    const cakes = await this.logService.getRankCake(sDate, eDate, after, limit);
 
-    for (const keyword of keywords) {
-      const apiUrl = `https://api.kezzlecake.com/clip/cakes/ko-search?keyword=${keyword}&size=${size}`; // 외부 API의 엔드포인트 URL
-      const response = await this.httpService.get(apiUrl).toPromise();
-      const cakes = response.data.result;
-
-      const sort_cakes = [];
-      for (const cake of cakes) {
-        const cakeDto = new CakeResponseDto(cake, user.firebaseUid);
-        if (cake.tag_ins.includes(keyword) === true) {
-          sort_cakes.unshift(cakeDto);
-        } else {
-          sort_cakes.push(cakeDto);
-        }
-      }
-      tmp_key_cake.push(new CakesCurationDto(sort_cakes, keyword));
-    }
-    //TODO: DTO로 변환하기
-    return tmp_key_cake;
+    const cakeResponse = await cakes.map(
+      (cake) => new CakeSimpleResponseDto(cake),
+    );
+    return new PopularCakesResponseDto(cakeResponse, sDate, eDate);
   }
 
-  async popular(user: IUser) {
-    const cakes = await this.cakeModel.find();
+  async similar(
+    cakeid: string,
+    lon: number,
+    lat: number,
+    dist: number,
+    size: number,
+    user: IUser,
+  ) {
+    const apiUrl = `https://api.kezzlecake.com/vit/cakes/similar-search?id=${cakeid}&lon=${lon}&lat=${lat}&dist=${dist}&size=${size}`; // 외부 API의 엔드포인트 URL
+    const response = await this.httpService.get(apiUrl).toPromise();
+    const cakes = response.data.result;
 
-    function customSort(doc1, doc2) {
-      const doc1ins =
-        parseInt(doc1.like_ins, 10) * 0.1 + doc1.user_like_ids.length * 0.9;
-      const doc2ins =
-        parseInt(doc2.like_ins, 10) * 0.1 + doc2.user_like_ids.length * 0.9;
-      if (doc2ins < doc1ins) return -1;
-      else if (doc2ins > doc1ins) return 1;
-      return 0;
-    }
-    cakes.sort(customSort);
+    // TODO: 케이크가 안 올수도 있다 return은 빈 배열
+    const cakeResponse = await Promise.all(
+      cakes.map(async (cake) => {
+        const store = await this.storeService.findOne(
+          cake.owner_store_id,
+          user,
+        );
+        return await new CakeSimilarResponseDto(
+          cake,
+          new StoreSimpleResponseDto(store),
+        );
+      }),
+    );
+    return new CakesResponseDto(cakeResponse, false);
+  }
 
-    //TODO:Top 20개 보내기
+  async anniversary(anniId: string, user: IUser, page: number) {
+    if (Number.isNaN(page)) page = 0;
+    const anniversary =
+      await this.anniversaryService.getAnniversaryWord(anniId);
+    const keyword = anniversary.keyword.join(', ');
+    const apiUrl = `https://api.kezzlecake.com/clip/cakes/ko-search-page?keyword=${keyword}&size=20&page=${page}`; // 외부 API의 엔드포인트 URL
+    const response = await this.httpService.get(apiUrl).toPromise();
+    const cakes = response.data.result;
     const cakeResponse = await cakes.map(
       (cake) => new CakeResponseDto(cake, user.firebaseUid),
     );

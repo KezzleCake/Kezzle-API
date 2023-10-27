@@ -1,19 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CakeResponseDto } from './response-cake.dto';
 
-export class CakesCurationDto {
-  @ApiProperty({
-    description: '키워드',
-  })
-  readonly keyword: string;
+export class PopularCakesResponseDto {
+  readonly startDate: string;
+  readonly endDate: string;
 
   @ApiProperty({
     description: '케이크들',
   })
   readonly cakes: CakeResponseDto[];
 
-  constructor(data: any, keyword: string) {
-    this.keyword = keyword;
+  constructor(data: any, startDate: string, endDate: string) {
+    this.startDate = startDate;
+    this.endDate = endDate;
     this.cakes = data;
   }
 }

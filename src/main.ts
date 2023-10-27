@@ -24,6 +24,7 @@ async function bootstrap() {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     }),
   });
+
   await app.listen(3000);
 }
 bootstrap();

@@ -32,6 +32,7 @@ provider:
 functions:
   main:
     architecture: x86_64
+    timeout: 30
     image:
       name: appimage
       command:

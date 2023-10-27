@@ -75,7 +75,7 @@ export class DetailStoreResponseDto {
 
   @ApiProperty({
     type: String,
-    description: '케이크 매장 오픈 시간 ',
+    description: '매장이 소유한 케이크 맛 ',
     example: '[초코, 딸기, 당근]',
   })
   readonly taste: string[];
