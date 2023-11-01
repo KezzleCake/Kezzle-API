@@ -12,6 +12,7 @@ import { SearchModule } from './search/search.module';
 import { CurationModule } from './curation/curation.module';
 import { LogModule } from './log/log.module';
 import { AnniversaryModule } from './anniversary/anniversary.module';
+import { CounterModule } from './counter/counter.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AnniversaryModule } from './anniversary/anniversary.module';
     CurationModule,
     LogModule,
     AnniversaryModule,
+    CounterModule,
   ],
   controllers: [],
   providers: [
