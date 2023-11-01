@@ -23,6 +23,7 @@ import { LogService } from 'src/log/log.service';
 import { PopularCakesResponseDto } from './dto/response-popular-cakes.dto';
 import { AnniversaryService } from 'src/anniversary/anniversary.service';
 import { CakeSimpleResponseDto } from './dto/response-cake-simple.dto';
+import { CounterService } from 'src/counter/counter.service';
 
 @Injectable()
 export class CakeService {
@@ -36,6 +37,7 @@ export class CakeService {
     private readonly httpService: HttpService,
     private readonly logService: LogService,
     private readonly anniversaryService: AnniversaryService,
+    private readonly counterService: CounterService,
   ) {}
 
   // async findAll(user: IUser, after, limit: number): Promise<CakesResponseDto> {
@@ -259,6 +261,7 @@ export class CakeService {
     );
   }
 
+  // TODO: Delete Column으로 변경하기
   async removeContent(cakeid: string, user: IUser) {
     const cake = await this.cakeModel.findById(cakeid).catch(() => {
       throw new CakeNotFoundException(cakeid);
@@ -322,6 +325,9 @@ export class CakeService {
         }
       }
 
+      const faissId: number =
+        await this.counterService.getNextSequenceValue('cakes');
+
       if (content !== undefined) {
         const s = content.hash
           .split('#')
@@ -335,12 +341,14 @@ export class CakeService {
           like_ins: content.fav,
           tag_ins: s,
           content_ins: content.content,
+          faiss_id: faissId,
         });
       } else {
         await this.cakeModel.create({
           image: image,
           owner_store_id: storeid,
           cursor: cursorValue,
+          faiss_id: faissId,
         });
       }
       cnt++;
