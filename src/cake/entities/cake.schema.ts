@@ -15,7 +15,7 @@ export class Cake {
   @Prop({ type: [{ type: String, ref: 'User', default: [] }] })
   user_like_ids: string[];
 
-  @Prop({ type: String, ref: 'User' })
+  @Prop({ type: String, ref: 'User', index: true })
   owner_store_id: string;
 
   @Prop({ type: String })
@@ -29,6 +29,9 @@ export class Cake {
 
   @Prop({ type: Number })
   cal_likes: number;
+
+  @Prop({ type: Number, unique: true, index: true })
+  faiss_id: number;
 }
 
 const schema = SchemaFactory.createForClass(Cake);

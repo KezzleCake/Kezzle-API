@@ -9,6 +9,7 @@ import { HttpModule } from '@nestjs/axios';
 import { StoreModule } from 'src/store/store.module';
 import { LogModule } from 'src/log/log.module';
 import { AnniversaryModule } from 'src/anniversary/anniversary.module';
+import { CounterModule } from 'src/counter/counter.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AnniversaryModule } from 'src/anniversary/anniversary.module';
     forwardRef(() => StoreModule),
     LogModule,
     AnniversaryModule,
+    CounterModule,
   ],
   controllers: [CakeController],
   providers: [CakeService],
