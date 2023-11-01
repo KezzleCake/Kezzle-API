@@ -22,11 +22,13 @@ export class SearchService {
     const response = await this.httpService.get(apiUrl).toPromise();
     const cakes = response.data.result;
 
-    const keywordArr = keywords.split(',').map((keyword) => keyword.trim());
-    for (let i = 0; i < keywordArr.length; i++) {
-      const word = keywordArr[i];
-      const arr = [...keywordArr.slice(0, i), ...keywordArr.slice(i + 1)];
-      this.logService.searchlog(user.firebaseUid, word, arr);
+    if (page === 0 || page === undefined) {
+      const keywordArr = keywords.split(',').map((keyword) => keyword.trim());
+      for (let i = 0; i < keywordArr.length; i++) {
+        const word = keywordArr[i];
+        const arr = [...keywordArr.slice(0, i), ...keywordArr.slice(i + 1)];
+        this.logService.searchlog(user.firebaseUid, word, arr);
+      }
     }
 
     const cakeResponse = await cakes.map(
