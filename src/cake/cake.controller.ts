@@ -35,6 +35,7 @@ import {
   FileInterceptor,
 } from '@nestjs/platform-express';
 import { CakesResponseDto } from './dto/response-cakes.dto';
+import { CakesSimpleResponseDto } from './dto/response-cakes-simple.dto';
 
 const cakeIdParams = {
   name: 'id',
@@ -120,6 +121,16 @@ export class CakeController {
       after,
       parseInt(limit),
     );
+  }
+
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/newest')
+  async getAllByNewest(
+    @Query('after') after,
+    @Query('count') limit,
+  ): Promise<CakesSimpleResponseDto> {
+    const a = await this.cakeService.findAllByNewest(after, parseInt(limit));
+    return a;
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)

@@ -24,6 +24,7 @@ import { PopularCakesResponseDto } from './dto/response-popular-cakes.dto';
 import { AnniversaryService } from 'src/anniversary/anniversary.service';
 import { CakeSimpleResponseDto } from './dto/response-cake-simple.dto';
 import { CounterService } from 'src/counter/counter.service';
+import { CakesSimpleResponseDto } from './dto/response-cakes-simple.dto';
 
 @Injectable()
 export class CakeService {
@@ -146,6 +147,42 @@ export class CakeService {
     );
 
     return new CakesResponseDto(cakeResponse, hasMore);
+  }
+
+  async findAllByNewest(after: string, limit: number) {
+    if (Number.isNaN(limit)) {
+      limit = 20;
+    }
+
+    const pipelines: PipelineStage[] = [
+      {
+        $sort: {
+          _id: -1,
+        },
+      },
+    ];
+
+    if (after !== undefined) {
+      pipelines.push({
+        $match: {
+          _id: {
+            $lt: new ObjectId(after),
+          },
+        },
+      });
+    }
+
+    let cakes = await this.cakeModel.aggregate(pipelines).limit(limit + 1);
+    let hasMore = false;
+
+    if (cakes.length > limit) {
+      hasMore = true;
+      cakes = cakes.slice(0, cakes.length - 1);
+    }
+
+    const cakeResponse = cakes.map((cake) => new CakeSimpleResponseDto(cake));
+
+    return new CakesSimpleResponseDto(cakeResponse, hasMore);
   }
 
   async findAllByLocation(
