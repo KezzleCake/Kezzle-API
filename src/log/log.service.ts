@@ -30,7 +30,11 @@ export class LogService {
       .limit(10);
   }
 
-  async getRankWord(startDateStr: string, endDateStr: string) {
+  async getRankWord(
+    startDateStr: string,
+    endDateStr: string,
+    limit: number = 10,
+  ) {
     const startDate = new Date(startDateStr);
     const endDate = new Date(endDateStr);
 
@@ -55,7 +59,7 @@ export class LogService {
     };
 
     const pipeline = [match, group, sort];
-    return await this.keywordModel.aggregate(pipeline);
+    return await this.keywordModel.aggregate(pipeline).limit(limit);
   }
 
   async cakeLikelog(userId: string, cakeId: string, type: boolean) {
