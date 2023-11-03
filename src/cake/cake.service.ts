@@ -185,6 +185,29 @@ export class CakeService {
     return new CakesSimpleResponseDto(cakeResponse, hasMore);
   }
 
+  async findAllByRecommend(
+    user: IUser | undefined,
+  ): Promise<CakeSimpleResponseDto[]> {
+    let userLikedCakeId: string | undefined =
+      user !== undefined
+        ? user.cake_like_ids[
+            Math.floor(Math.random() * user.cake_like_ids.length)
+          ]
+        : undefined;
+
+    if (userLikedCakeId === undefined) {
+      userLikedCakeId = (
+        await this.cakeModel.aggregate([{ $sample: { size: 1 } }])
+      )[0]._id.toString();
+    }
+
+    const apiUrl = `https://api.kezzlecake.com/vit/cakes/similar-search?id=${userLikedCakeId}&lon=126.799523&lat=37.4732852&dist=1000000&size=6`; // 외부 API의 엔드포인트 URL
+    const response = await this.httpService.get(apiUrl).toPromise();
+    const cakes = response.data.result;
+
+    return cakes.map((cake) => new CakeSimpleResponseDto(cake));
+  }
+
   async findAllByLocation(
     user: IUser,
     latitude: number,
