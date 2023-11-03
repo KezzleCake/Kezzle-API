@@ -11,6 +11,14 @@ import { CurationCakeResponsDto } from './dto/response-curation-cake.dto';
 import { AnniversaryService } from 'src/anniversary/anniversary.service';
 import { CakeService } from 'src/cake/cake.service';
 import { CakeSimpleResponseDto } from 'src/cake/dto/response-cake-simple.dto';
+import { CurationDtoV2 } from './dto/response-curation.dto.v2';
+import { AnniversaryDto } from 'src/anniversary/dto/response-anniversary.dto';
+import { PopularCakesResponseDto } from 'src/cake/dto/response-popular-cakes.dto';
+import { SearchService } from 'src/search/search.service';
+import { RankResponseDto } from 'src/search/dto/response-search-rank.dto';
+import { HomeCurationDtoV2 } from './dto/response-home-curation.dto.v2';
+import { CakesSimpleResponseDto } from 'src/cake/dto/response-cakes-simple.dto';
+import IUser from 'src/user/interfaces/user.interface';
 
 @Injectable()
 export class CurationService {
@@ -20,6 +28,7 @@ export class CurationService {
     private readonly httpService: HttpService,
     private readonly cakeService: CakeService,
     private readonly anniversaryService: AnniversaryService,
+    private readonly searchService: SearchService,
   ) {}
   async createCuration(keyword: string, disc: string, note: string) {
     const apiUrl = `https://api.kezzlecake.com/clip/cakes/ko-search?keyword=${keyword}&size=100`; // 외부 API의 엔드포인트 URL
@@ -47,6 +56,34 @@ export class CurationService {
     const ann = await this.anniversaryService.getAnniversary();
     const pop = await this.cakeService.popular(NaN, 10);
     return new HomeCurationDto(result, ann, pop);
+  }
+
+  async homeCurationV2(user: IUser | undefined) {
+    const recommendCakes: CakeSimpleResponseDto[] =
+      await this.cakeService.findAllByRecommend(user);
+    const anniversary: AnniversaryDto =
+      await this.anniversaryService.getAnniversary();
+    const popularCakes: PopularCakesResponseDto =
+      await this.cakeService.popular(NaN, 3);
+    const keywordRanks: RankResponseDto = await this.searchService.getRank(
+      undefined,
+      undefined,
+      4,
+    );
+    const newestCakes: CakesSimpleResponseDto =
+      await this.cakeService.findAllByNewest(undefined, 4);
+    const curations: CurationDtoV2[] = (
+      await this.curationModel.find().limit(4)
+    ).map((curation) => new CurationDtoV2(curation));
+
+    return new HomeCurationDtoV2(
+      recommendCakes,
+      anniversary,
+      popularCakes,
+      keywordRanks,
+      newestCakes,
+      curations,
+    );
   }
 
   async showCuration(curationId: string, page: number) {
