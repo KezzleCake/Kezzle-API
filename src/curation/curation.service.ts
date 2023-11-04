@@ -58,7 +58,7 @@ export class CurationService {
     return new HomeCurationDto(result, ann, pop);
   }
 
-  async homeCurationV2(user: IUser | undefined) {
+  async homeCurationV2(user: IUser | undefined): Promise<HomeCurationDtoV2> {
     const recommendCakes: CakeSimpleResponseDto[] =
       await this.cakeService.findAllByRecommend(user);
     const anniversary: AnniversaryDto =
@@ -77,8 +77,8 @@ export class CurationService {
     ).map((curation) => new CurationDtoV2(curation));
 
     return new HomeCurationDtoV2(
-      recommendCakes,
       anniversary,
+      recommendCakes,
       popularCakes,
       keywordRanks,
       newestCakes,

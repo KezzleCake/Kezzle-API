@@ -11,6 +11,7 @@ export class CakesSimpleResponseDto {
 
   @ApiProperty({
     description: '케이크들',
+    type: [CakeSimpleResponseDto],
   })
   readonly cakes: CakeSimpleResponseDto[];
 
