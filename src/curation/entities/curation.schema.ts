@@ -16,6 +16,9 @@ export class Curation {
 
   @Prop({ type: String })
   note: string;
+
+  @Prop({ type: Date })
+  updatedAt?: Date;
 }
 
 const schema = SchemaFactory.createForClass(Curation);

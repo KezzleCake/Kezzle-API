@@ -43,6 +43,19 @@ export class CurationService {
     });
   }
 
+  async updateCuration(curationId: string) {
+    const curation = await this.curationModel.findById(curationId).catch(() => {
+      throw new CurationNotFoundException(curationId);
+    });
+
+    const apiUrl = `https://api.kezzlecake.com/clip/cakes/ko-search?keyword=${curation.key}&size=100`; // 외부 API의 엔드포인트 URL
+    const response = await this.httpService.get(apiUrl).toPromise();
+    const cakes = response.data.result;
+
+    curation.cakes = cakes;
+    curation.save();
+  }
+
   async homeCuration() {
     const ments = ['상황별 BEST', '받는 사람들을 위한 케이크'];
 
@@ -74,7 +87,17 @@ export class CurationService {
       await this.cakeService.findAllByNewest(undefined, 4);
     const curations: CurationDtoV2[] = (
       await this.curationModel.find().limit(4)
-    ).map((curation) => new CurationDtoV2(curation));
+    ).map((curation) => {
+      const threeDaysLater = new Date(curation.updatedAt);
+      threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+      const currentDate = new Date();
+
+      if (threeDaysLater < currentDate) {
+        this.updateCuration(curation._id.toString());
+      }
+
+      return new CurationDtoV2(curation);
+    });
 
     return new HomeCurationDtoV2(
       anniversary,
