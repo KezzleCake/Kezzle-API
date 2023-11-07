@@ -107,6 +107,7 @@ export class CakeService {
     if (after === undefined || after.trim() === '') {
       match = {
         $match: {
+          is_delete: false,
           owner_store_id: {
             $in: storeIdsInLocation,
           },
@@ -115,6 +116,7 @@ export class CakeService {
     } else {
       match = {
         $match: {
+          is_delete: false,
           owner_store_id: {
             $in: storeIdsInLocation,
           },
@@ -165,6 +167,7 @@ export class CakeService {
     if (after !== undefined) {
       pipelines.push({
         $match: {
+          is_delete: false,
           _id: {
             $lt: new ObjectId(after),
           },
@@ -245,6 +248,7 @@ export class CakeService {
     if (after === undefined || after.trim() === '') {
       match = {
         $match: {
+          is_delete: false,
           owner_store_id: {
             $in: storeIdsInLocation,
           },
@@ -253,6 +257,7 @@ export class CakeService {
     } else {
       match = {
         $match: {
+          is_delete: false,
           owner_store_id: {
             $in: storeIdsInLocation,
           },
@@ -319,7 +324,6 @@ export class CakeService {
     );
   }
 
-  // TODO: Delete Column으로 변경하기
   async removeContent(cakeid: string, user: IUser) {
     const cake = await this.cakeModel.findById(cakeid).catch(() => {
       throw new CakeNotFoundException(cakeid);
@@ -330,7 +334,7 @@ export class CakeService {
         throw new StoreNotFoundException(cake.owner_store_id);
       });
     if (
-      store.owner_user_id !== user.firebaseUid &&
+      // store.owner_user_id !== user.firebaseUid &&
       !user.roles.includes(Roles.ADMIN)
     ) {
       throw new UserNotOwnerException(user.firebaseUid, store.owner_user_id);
@@ -340,7 +344,17 @@ export class CakeService {
 
     await this.uploadService.remove(path, cake.image.s3Url);
 
-    return await this.cakeModel.deleteOne({ _id: cakeid });
+    // return await this.cakeModel.deleteOne({ _id: cakeid });
+    return await this.cakeModel.updateOne(
+      {
+        _id: cakeid,
+      },
+      {
+        $set: {
+          is_delete: true,
+        },
+      },
+    );
   }
 
   async createCake(storeid, user: IUser, files) {
@@ -433,12 +447,14 @@ export class CakeService {
     if (after === undefined) {
       cakes = await this.cakeModel
         .find({
+          is_delete: false,
           owner_store_id: storeid,
         })
         .limit(limit + 1);
     } else {
       cakes = await this.cakeModel
         .find({
+          is_delete: false,
           _id: { $gt: after },
           owner_store_id: storeid,
         })
@@ -465,6 +481,7 @@ export class CakeService {
 
     const cakes = await this.cakeModel
       .find({
+        is_delete: false,
         owner_store_id: storeid,
       })
       .sort({ createdAt: -1 })

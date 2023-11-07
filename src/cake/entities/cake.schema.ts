@@ -32,6 +32,9 @@ export class Cake {
 
   @Prop({ type: Number, unique: true, index: true })
   faiss_id: number;
+
+  @Prop({ type: Boolean, index: true, default: false })
+  is_delete: boolean;
 }
 
 const schema = SchemaFactory.createForClass(Cake);
