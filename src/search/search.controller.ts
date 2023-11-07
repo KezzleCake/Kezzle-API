@@ -19,8 +19,8 @@ export class SearchController {
   }
 
   @Get('rank')
-  async keywordRank() {
-    return await this.searchService.getRank();
+  async keywordRank(@Query('startDate') startDate, @Query('endDate') endDate) {
+    return await this.searchService.getRank(startDate, endDate);
   }
 
   @Get(':id')

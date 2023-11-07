@@ -41,11 +41,13 @@ export class SearchService {
     );
   }
 
-  async getRank() {
-    const sDate = '2023-01-01';
-    const eDate = '2023-11-25';
-    const result = await this.logService.getRankWord(sDate, eDate);
-    return new RankResponseDto(result, sDate, eDate);
+  async getRank(
+    startDate: string = '2023-01-01',
+    endDate: string = '2023-11-25',
+    limit?: number,
+  ) {
+    const result = await this.logService.getRankWord(startDate, endDate, limit);
+    return new RankResponseDto(result, startDate, endDate);
   }
 
   async getLatest(userId: string) {

@@ -7,6 +7,8 @@ import { HttpModule } from '@nestjs/axios';
 import { AnniversaryModule } from 'src/anniversary/anniversary.module';
 import { LogModule } from 'src/log/log.module';
 import { CakeModule } from 'src/cake/cake.module';
+import { SearchModule } from 'src/search/search.module';
+import { CurationControllerV2 } from './curation.controller.v2';
 
 @Module({
   imports: [
@@ -18,8 +20,9 @@ import { CakeModule } from 'src/cake/cake.module';
     AnniversaryModule,
     LogModule,
     CakeModule,
+    SearchModule,
   ],
-  controllers: [CurationController],
+  controllers: [CurationController, CurationControllerV2],
   providers: [CurationService],
 })
 export class CurationModule {}

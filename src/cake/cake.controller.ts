@@ -35,6 +35,7 @@ import {
   FileInterceptor,
 } from '@nestjs/platform-express';
 import { CakesResponseDto } from './dto/response-cakes.dto';
+import { CakesSimpleResponseDto } from './dto/response-cakes-simple.dto';
 
 const cakeIdParams = {
   name: 'id',
@@ -120,6 +121,28 @@ export class CakeController {
       after,
       parseInt(limit),
     );
+  }
+
+  @ApiQuery({
+    name: 'after',
+    description:
+      'Cursor를 기준으로 커서 기반 페이지네이션을 합니다.(없으면 첫번째 페이지)',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'count',
+    description: '요청할 케이크 개수',
+    required: false,
+    type: Number,
+  })
+  @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)
+  @Get('cakes/newest')
+  async getAllByNewest(
+    @Query('after') after,
+    @Query('count') limit,
+  ): Promise<CakesSimpleResponseDto> {
+    return await this.cakeService.findAllByNewest(after, parseInt(limit));
   }
 
   @RolesAllowed(Roles.ADMIN, Roles.SELLER, Roles.BUYER)

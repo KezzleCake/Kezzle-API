@@ -8,5 +8,6 @@ import { LogModule } from 'src/log/log.module';
   imports: [HttpModule, LogModule],
   controllers: [SearchController],
   providers: [SearchService],
+  exports: [SearchService],
 })
 export class SearchModule {}

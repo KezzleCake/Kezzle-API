@@ -22,16 +22,15 @@ export class CakeResponseDto {
   readonly isLiked: boolean;
 
   @ApiProperty({
-    type: Boolean,
+    type: String,
     description: 'cursor',
-    example: true,
+    example: '0123456789',
   })
   readonly cursor: string;
 
   @ApiProperty({
-    type: Boolean,
     description: 'hashtag',
-    example: true,
+    example: ['케이크', '초코'],
   })
   readonly hashtag: string[];
 
